@@ -1,3 +1,6 @@
-# bolt-twitter-clone
+# Y-Society
 
-[Edit in StackBlitz next generation editor ⚡️](https://stackblitz.com/~/github.com/donvito/bolt-twitter-clone)
+A social media platform built with React, TypeScript, and Firebase.
+
+## Live Demo
+[Y-Society](https://y-soceity.netlify.app)
