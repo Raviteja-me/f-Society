@@ -14,6 +14,13 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+// Validate config before initialization
+Object.entries(firebaseConfig).forEach(([key, value]) => {
+  if (!value) {
+    console.error(`Missing Firebase config value for ${key}`);
+  }
+});
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
