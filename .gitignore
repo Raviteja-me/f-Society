@@ -38,5 +38,4 @@ dist-ssr
 *.sln
 *.sw?
 
-# Firebase
-.firebase/
+
