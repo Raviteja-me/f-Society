@@ -5,9 +5,22 @@ import { useTheme } from '../context/ThemeContext';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
 }
 
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, onSuccess }) {
+  const handleLoginSuccess = () => {
+    onSuccess?.(); // Close the modal after successful login
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await signInWithGoogle();
+      handleLoginSuccess();
+    } catch (error) {
+      console.error('Error signing in with Google:', error);
+    }
+  };
   const { theme } = useTheme();
   const { signInWithGoogle } = useAuth();
   
@@ -27,10 +40,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           <img 
             src={theme === 'dark' ? '/white.svg' : '/black.svg'} 
             alt="Logo"
-            className="h-8 w-8"
+            className="h-32 w-22" // Updated size for the auth modal logo
           />
 
-          <h1 className="text-3xl font-bold dark:text-white">Sign in to Y-Society</h1>
+          <h1 className="text-3xl font-bold dark:text-white">Sign In</h1>
 
           <button
             onClick={signInWithGoogle}

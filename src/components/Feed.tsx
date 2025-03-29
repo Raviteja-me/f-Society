@@ -57,6 +57,22 @@ export function Feed() {
     if (!currentUser || !commentText.trim()) return;
 
     try {
+      // Optimistically update UI first
+      const newComment = {
+        id: crypto.randomUUID(),
+        uid: currentUser.uid,
+        text: commentText.trim(),
+        timestamp: new Date().toISOString(),
+        userDisplayName: currentUser.displayName || 'Anonymous',
+        userPhotoURL: currentUser.photoURL || '',
+        createdAt: new Date().toISOString(),
+        likes: []
+      };
+
+      // Clear input immediately but keep comment section open
+      setCommentText('');
+
+      // Update Firestore
       const postRef = doc(db, 'posts', postId);
       const postDoc = await getDoc(postRef);
 
@@ -65,17 +81,6 @@ export function Feed() {
         return;
       }
 
-      const newComment = {
-        id: crypto.randomUUID(),
-        uid: currentUser.uid,
-        text: commentText.trim(),
-        timestamp: new Date().toISOString(), // Changed from serverTimestamp()
-        userDisplayName: currentUser.displayName || 'Anonymous',
-        userPhotoURL: currentUser.photoURL || '',
-        createdAt: new Date().toISOString(),
-        likes: []
-      };
-
       const currentComments = postDoc.data().comments || [];
 
       await updateDoc(postRef, {
@@ -83,12 +88,44 @@ export function Feed() {
         'stats.comments': increment(1)
       });
 
-      setCommentText('');
-      setActiveCommentPost(null);
+      // Don't close comment section after posting
+      // setActiveCommentPost(null); - removed this line
+
     } catch (error) {
       console.error('Error adding comment:', error);
+      // Optionally show error message to user
     }
-  };
+};
+
+// Add loading state for comment posting
+const [isPostingComment, setIsPostingComment] = useState(false);
+
+// Update the form submission
+<form
+  onSubmit={async (e) => {
+    e.preventDefault();
+    if (isPostingComment) return; // Prevent double submission
+    setIsPostingComment(true);
+    await handleComment(post.id);
+    setIsPostingComment(false);
+  }}
+  className="flex space-x-2"
+>
+  <input
+    type="text"
+    value={commentText}
+    onChange={(e) => setCommentText(e.target.value)}
+    placeholder="Write a comment..."
+    className="flex-1 rounded-full px-4 py-2 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+  <button
+    type="submit"
+    disabled={!commentText.trim() || isPostingComment}
+    className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    {isPostingComment ? 'Posting...' : 'Post'}
+  </button>
+</form>
 
 
   // Update handleLike function
@@ -284,12 +321,16 @@ export function Feed() {
 
               {/* Display comments */}
               <div className="space-y-4">
+           
                 {post.comments?.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map((comment) => (
                   <div key={comment.id} className="flex space-x-2">
                     <img
-                      src={comment.userPhotoURL || 'https://via.placeholder.com/40'}
+                      src={comment.userPhotoURL || currentUser?.photoURL || '/default-avatar.png'}
                       alt={comment.userDisplayName}
-                      className="h-8 w-8 rounded-full"
+                      className="h-8 w-8 rounded-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + comment.userDisplayName;
+                      }}
                     />
                     <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
                       <div className="font-semibold dark:text-white">
