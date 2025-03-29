@@ -43,7 +43,7 @@ export function Sidebar() {
                 <img 
                   src={theme === 'dark' ? '/white.svg' : '/black.svg'} 
                   alt="Logo"
-                  className="h-8 w-8"
+                  className="h-32 w-22"
                 />
               </RouterLink>
               <ThemeToggle />
