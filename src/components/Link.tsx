@@ -1,20 +1,18 @@
 import React from 'react';
-import { LucideIcon } from 'lucide-react';
+import { Link as RouterLink } from 'react-router-dom';
 
 interface LinkProps {
-  Icon: LucideIcon;
+  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   text: string;
   path: string;
+  onClick?: () => void;
 }
 
-export function Link({ Icon, text, path }: LinkProps) {
+export function Link({ Icon, text, path, onClick }: LinkProps) {
   return (
-    <a 
-      href={path}
-      className="flex items-center space-x-4 p-3 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors text-gray-900 dark:text-white"
-    >
-      <Icon className="h-6 w-6" />
-      <span className="text-xl">{text}</span>
-    </a>
+    <RouterLink to={path} className="group flex items-center space-x-2 py-2 px-4 rounded-full transition-colors hover:bg-gray-200 dark:hover:bg-gray-800 w-full" onClick={onClick}>
+      <Icon className="h-5 w-5 text-gray-700 dark:text-gray-300 group-hover:text-blue-500 dark:group-hover:text-blue-500 transition-colors" />
+      <span className="font-bold text-gray-700 dark:text-gray-300 group-hover:text-blue-500 dark:group-hover:text-blue-500 transition-colors">{text}</span>
+    </RouterLink>
   );
 }

@@ -28,7 +28,7 @@ export function Feed() {
       try {
         const postsRef = collection(db, 'posts');
         const q = query(postsRef, orderBy('timestamp', 'desc'));
-        
+
         const unsubscribe = onSnapshot(q, (snapshot) => {
           const posts = snapshot.docs.map(doc => ({
             id: doc.id,
@@ -43,13 +43,13 @@ export function Feed() {
           }));
           setPosts(posts);
         });
-  
+
         return () => unsubscribe();
       } catch (error) {
         console.error('Error initializing posts:', error);
       }
     };
-  
+
     initializePosts();
   }, []);
 
@@ -95,50 +95,50 @@ export function Feed() {
       console.error('Error adding comment:', error);
       // Optionally show error message to user
     }
-};
+  };
 
-// Add loading state for comment posting
-const [isPostingComment, setIsPostingComment] = useState(false);
+  // Add loading state for comment posting
+  const [isPostingComment, setIsPostingComment] = useState(false);
 
-// Update the form submission
-<form
-  onSubmit={async (e) => {
-    e.preventDefault();
-    if (isPostingComment) return; // Prevent double submission
-    setIsPostingComment(true);
-    await handleComment(post.id);
-    setIsPostingComment(false);
-  }}
-  className="flex space-x-2"
->
-  <input
-    type="text"
-    value={commentText}
-    onChange={(e) => setCommentText(e.target.value)}
-    placeholder="Write a comment..."
-    className="flex-1 rounded-full px-4 py-2 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-  />
-  <button
-    type="submit"
-    disabled={!commentText.trim() || isPostingComment}
-    className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+  // Update the form submission
+  <form
+    onSubmit={async (e) => {
+      e.preventDefault();
+      if (isPostingComment) return; // Prevent double submission
+      setIsPostingComment(true);
+      await handleComment(post.id);
+      setIsPostingComment(false);
+    }}
+    className="flex space-x-2"
   >
-    {isPostingComment ? 'Posting...' : 'Post'}
-  </button>
-</form>
+    <input
+      type="text"
+      value={commentText}
+      onChange={(e) => setCommentText(e.target.value)}
+      placeholder="Write a comment..."
+      className="flex-1 rounded-full px-4 py-2 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+    <button
+      type="submit"
+      disabled={!commentText.trim() || isPostingComment}
+      className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {isPostingComment ? 'Posting...' : 'Post'}
+    </button>
+  </form>
 
 
   // Update handleLike function
   const handleLike = async (postId) => {
     if (!currentUser) return;
-  
+
     try {
       const postRef = doc(db, 'posts', postId);
       const post = posts.find(p => p.id === postId);
       const hasLiked = post.likes?.includes(currentUser.uid);
-  
+
       await updateDoc(postRef, {
-        likes: hasLiked 
+        likes: hasLiked
           ? arrayRemove(currentUser.uid)
           : arrayUnion(currentUser.uid)
       });
@@ -201,7 +201,7 @@ const [isPostingComment, setIsPostingComment] = useState(false);
 
 
   return (
-    <div className="divide-y divide-gray-200 dark:divide-gray-800">
+    <div className="divide-y divide-gray-200 dark:divide-gray-800 mt-12 md:mt-0"> {/* Added mt-12 for mobile */}
       {posts.map((post) => (
         <div key={post.id} className="p-4 space-y-4">
           {/* Post Header */}
@@ -276,15 +276,15 @@ const [isPostingComment, setIsPostingComment] = useState(false);
             <button
               onClick={() => handleLike(post.id)}
               className={`flex items-center space-x-2 ${
-                post.likes?.includes(currentUser?.uid) 
-                  ? 'text-red-500' 
+                post.likes?.includes(currentUser?.uid)
+                  ? 'text-red-500'
                   : 'text-gray-500 hover:text-red-500'
               }`}
             >
               <Heart className="h-5 w-5" />
               <span>{post.likes?.length || 0}</span>
             </button>
-            <button 
+            <button
               onClick={() => handleShare(post)}
               className="flex items-center space-x-2 text-gray-500 hover:text-blue-500"
             >
@@ -321,7 +321,7 @@ const [isPostingComment, setIsPostingComment] = useState(false);
 
               {/* Display comments */}
               <div className="space-y-4">
-           
+
                 {post.comments?.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map((comment) => (
                   <div key={comment.id} className="flex space-x-2">
                     <img
