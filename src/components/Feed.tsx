@@ -14,6 +14,7 @@ import {
 import { db } from '../config/firebase';
 import { MessageCircle, Repeat2, Heart, Share, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { FileText, FileImage, FileVideo, FileArchive, FileSpreadsheet } from 'lucide-react';
 
 export function Feed() {
   const [posts, setPosts] = useState([]);
@@ -91,6 +92,59 @@ export function Feed() {
     }
   };
 
+  const getFileIcon = (mimeType: string) => {
+    if (mimeType.startsWith('image/')) return FileImage;
+    if (mimeType.startsWith('video/')) return FileVideo;
+    if (mimeType.startsWith('application/pdf')) return FileText;
+    if (mimeType.startsWith('application/vnd.openxmlformats-officedocument') || 
+        mimeType.startsWith('application/msword')) return FileText;
+    if (mimeType.startsWith('application/vnd.ms-excel')) return FileSpreadsheet;
+    if (mimeType.startsWith('application/zip') || 
+        mimeType.startsWith('application/x-rar-compressed') ||
+        mimeType.startsWith('application/vnd.android.package-archive')) return FileArchive;
+    return FileText;
+  };
+
+  const renderMedia = (media: any) => {
+    switch (media.type) {
+      case 'image':
+        return (
+          <img 
+            src={media.url} 
+            alt="" 
+            className="w-full max-h-[512px] object-contain rounded-2xl"
+            loading="lazy"
+          />
+        );
+      case 'video':
+        return (
+          <video 
+            src={media.url} 
+            controls 
+            className="w-full max-h-[512px] rounded-2xl"
+          />
+        );
+      default:
+        const Icon = getFileIcon(media.mimeType);
+        return (
+          <a 
+            href={media.url}
+            target="_blank"
+            rel="noopener noreferrer" 
+            className="flex items-center space-x-2 p-4 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          >
+            <Icon className="h-8 w-8 text-blue-500" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{media.filename}</p>
+              <p className="text-xs text-gray-500">
+                {(media.size / (1024 * 1024)).toFixed(2)} MB
+              </p>
+            </div>
+          </a>
+        );
+    }
+  };
+
   return (
     <div className="border-l border-r border-gray-200 dark:border-gray-800">
       <div className="divide-y divide-gray-200 dark:divide-gray-800">
@@ -114,14 +168,10 @@ export function Feed() {
                 <p className="mt-2 text-gray-900 dark:text-white">{post.content}</p>
                 
                 {post.media && post.media.length > 0 && (
-                  <div className="mt-3 grid gap-2">
+                  <div className="mt-3 space-y-3">
                     {post.media.map((media, index) => (
                       <div key={index}>
-                        {media.type === 'image' ? (
-                          <img src={media.url} alt="" className="rounded-2xl" />
-                        ) : media.type === 'video' ? (
-                          <video src={media.url} controls className="rounded-2xl" />
-                        ) : null}
+                        {renderMedia(media)}
                       </div>
                     ))}
                   </div>
