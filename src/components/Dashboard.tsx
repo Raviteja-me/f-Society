@@ -90,6 +90,8 @@ export function Dashboard() {
         authorAvatar: currentUser.photoURL,
         timestamp: new Date(),
         media: mediaUrls,
+        likes: [],           // Initialize empty likes array
+        comments: [],        // Initialize empty comments array
         stats: {
           likes: 0,
           shares: 0,
