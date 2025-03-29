@@ -76,6 +76,7 @@ export function Sidebar() {
       <AuthModal 
         isOpen={isAuthOpen} 
         onClose={() => setIsAuthOpen(false)} 
+        onSuccess={() => setIsAuthOpen(false)} // Add this line
       />
     </>
   );

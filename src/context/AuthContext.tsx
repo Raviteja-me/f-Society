@@ -52,8 +52,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isPremium: false
         });
       }
+      return user; // Return the user
     } catch (error) {
       console.error('Error signing in with Google:', error);
+      return null;
     }
   };
 
