@@ -45,7 +45,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }) {
           <img
             src={theme === 'dark' ? '/white.svg' : '/black.svg'}
             alt="Logo"
-            className="h-32 w-22"
+            className="h-10 w-30"
           />
 
           <h1 className="text-3xl font-bold dark:text-white">Sign In</h1>

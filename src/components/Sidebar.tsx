@@ -48,11 +48,10 @@ export function Sidebar() {
     closeMobileMenu();
   }, [location]);
 
+  // Remove the goBack function and replace it with just using closeMobileMenu
   const goBack = () => {
-    navigate(-1);
     closeMobileMenu();
   };
-
 
   return (
     <>
@@ -63,7 +62,7 @@ export function Sidebar() {
             <img
               src={theme === 'dark' ? '/white.svg' : '/black.svg'}
               alt="Logo"
-              className="h-8 w-auto mx-auto"
+              className="h-12 w-auto mx-auto" // Increased height for better visibility
             />
           </RouterLink>
           <button onClick={toggleMobileMenu} className="p-2">
@@ -82,7 +81,7 @@ export function Sidebar() {
                 <img
                   src={theme === 'dark' ? '/white.svg' : '/black.svg'}
                   alt="Logo"
-                  className="h-32 w-22"
+                  className="h-15 w-auto" // Larger size for desktop
                 />
               </RouterLink>
               <ThemeToggle />
@@ -93,7 +92,7 @@ export function Sidebar() {
               <>
                 <div className="md:hidden flex flex-col items-start p-2">
                   <div className="flex items-center justify-between w-full mb-2">
-                    <button onClick={goBack} className="p-2">
+                    <button onClick={closeMobileMenu} className="p-2">
                       <ArrowLeft className="h-6 w-6 text-gray-700 dark:text-gray-300" />
                     </button>
                     <RouterLink to="/" className="flex-grow text-center">
