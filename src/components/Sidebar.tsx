@@ -53,6 +53,13 @@ export function Sidebar() {
     closeMobileMenu();
   };
 
+  // Add this new function to handle double click
+  const handleLogoDoubleClick = () => {
+    if (currentUser) {
+      navigate('/dashboard');
+    }
+  };
+
   return (
     <>
       {/* Mobile Header - Visible when sidebar is closed */}
@@ -63,6 +70,7 @@ export function Sidebar() {
               src={theme === 'dark' ? '/white.svg' : '/black.svg'}
               alt="Logo"
               className="h-12 w-auto mx-auto" // Increased height for better visibility
+              onDoubleClick={handleLogoDoubleClick}
             />
           </RouterLink>
           <button onClick={toggleMobileMenu} className="p-2">
@@ -82,6 +90,7 @@ export function Sidebar() {
                   src={theme === 'dark' ? '/white.svg' : '/black.svg'}
                   alt="Logo"
                   className="h-15 w-auto" // Larger size for desktop
+                  onDoubleClick={handleLogoDoubleClick}
                 />
               </RouterLink>
               <ThemeToggle />
