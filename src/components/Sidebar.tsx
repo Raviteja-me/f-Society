@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Search, Bell, Mail, BookOpen, Users, BadgeCheck, User, LogOut, Menu, ArrowLeft } from 'lucide-react';
+import { Home, Search, Bell, Mail, BookOpen, Users, BadgeCheck, User, LogOut, Menu, X } from 'lucide-react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { Link } from './Link';
 import { ThemeToggle } from './ThemeToggle';
@@ -55,119 +55,141 @@ export function Sidebar() {
   return (
     <>
       {/* Mobile Header */}
-      {!isMobileMenuOpen && (
-        <div className="md:hidden fixed top-0 left-0 w-full bg-white dark:bg-black p-2 flex items-center justify-between z-50">
-          <RouterLink to="/" className="flex-grow text-center">
-            <img
-              src={theme === 'dark' ? '/white.svg' : '/black.svg'}
-              alt="Logo"
-              className="h-12 w-auto mx-auto"
-              onDoubleClick={handleLogoDoubleClick}
-            />
-          </RouterLink>
-          <button onClick={toggleMobileMenu} className="p-2">
-            <Menu className="h-6 w-6 text-gray-700 dark:text-gray-300" />
-          </button>
+      <div className="md:hidden fixed top-0 left-0 w-full bg-white dark:bg-black p-2 flex items-center justify-between z-50 border-b border-gray-200 dark:border-gray-800">
+        <button 
+          onClick={toggleMobileMenu}
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
+        >
+          <Menu className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+        </button>
+        <RouterLink to="/" className="flex-grow text-center">
+          <img
+            src={theme === 'dark' ? '/white.svg' : '/black.svg'}
+            alt="Logo"
+            className="h-10 w-auto mx-auto"
+            onDoubleClick={handleLogoDoubleClick}
+          />
+        </RouterLink>
+        <div className="w-10">
+          <ThemeToggle />
         </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40" 
+          onClick={closeMobileMenu}
+        />
       )}
 
-      {/* Sidebar */}
-      <div className={`fixed h-screen w-64 bg-white dark:bg-black md:block ${isMobileMenuOpen ? 'block z-40' : 'hidden md:flex'}`}>
+      {/* Mobile Drawer */}
+      <div 
+        className={`md:hidden fixed top-0 left-0 h-full w-[275px] bg-white dark:bg-black z-50 transform transition-transform duration-300 ease-in-out ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
         <div className="flex flex-col h-full">
-          <div className="space-y-2 p-2">
-            {/* Desktop Header */}
-            <div className="hidden md:flex items-center justify-between px-2">
-              <RouterLink to="/">
-                <img
-                  src={theme === 'dark' ? '/white.svg' : '/black.svg'}
-                  alt="Logo"
-                  className="h-15 w-auto"
-                  onDoubleClick={handleLogoDoubleClick}
-                />
-              </RouterLink>
+          {/* Mobile Drawer Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+            <button 
+              onClick={closeMobileMenu}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
+            >
+              <X className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+            </button>
+            <RouterLink to="/" className="flex-grow text-center">
+              <img
+                src={theme === 'dark' ? '/white.svg' : '/black.svg'}
+                alt="Logo"
+                className="h-8 w-auto mx-auto"
+              />
+            </RouterLink>
+            <div className="w-10">
               <ThemeToggle />
             </div>
+          </div>
 
-            {/* Mobile Sidebar Content */}
-            {isMobileMenuOpen && (
-              <>
-                <div className="md:hidden flex flex-col items-start p-2">
-                  <div className="flex items-center justify-between w-full mb-2">
-                    <button onClick={closeMobileMenu} className="p-2">
-                      <ArrowLeft className="h-6 w-6 text-gray-700 dark:text-gray-300" />
-                    </button>
-                    <RouterLink to="/" className="flex-grow text-center">
-                      <img
-                        src={theme === 'dark' ? '/white.svg' : '/black.svg'}
-                        alt="Logo"
-                        className="h-8 w-auto"
-                        style={{ maxHeight: '2rem', overflow: 'hidden' }}
-                      />
-                    </RouterLink>
-                    <div className="flex justify-end">
-                      <ThemeToggle />
-                    </div>
-                  </div>
-                </div>
+          {/* Mobile Drawer Content */}
+          <div className="flex-1 overflow-y-auto py-2">
+            {menuItems.map((item) => (
+              <Link
+                key={item.text}
+                Icon={item.icon}
+                text={item.text}
+                path={item.path}
+                onClick={closeMobileMenu}
+              />
+            ))}
+          </div>
 
-                {menuItems.map((item) => (
-                  <Link
-                    key={item.text}
-                    Icon={item.icon}
-                    text={item.text}
-                    path={item.path}
-                    onClick={closeMobileMenu}
-                  />
-                ))}
-
-                {currentUser ? (
-                  <button
-                    onClick={() => { handleLogout(); closeMobileMenu(); }}
-                    className="w-full py-3 px-4 bg-red-500 text-white rounded-full font-bold hover:bg-red-600 transition flex items-center justify-center space-x-2"
-                  >
-                    <LogOut className="h-5 w-5" />
-                    <span>Logout</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => { setIsAuthOpen(true); closeMobileMenu(); }}
-                    className="w-full py-3 px-4 bg-blue-500 text-white rounded-full font-bold hover:bg-blue-600 transition"
-                  >
-                    Sign in
-                  </button>
-                )}
-              </>
+          {/* Mobile Drawer Footer */}
+          <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+            {currentUser ? (
+              <button
+                onClick={() => { handleLogout(); closeMobileMenu(); }}
+                className="w-full py-3 px-4 bg-red-500 text-white rounded-full font-bold hover:bg-red-600 transition flex items-center justify-center space-x-2"
+              >
+                <LogOut className="h-5 w-5" />
+                <span>Logout</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => { setIsAuthOpen(true); closeMobileMenu(); }}
+                className="w-full py-3 px-4 bg-blue-500 text-white rounded-full font-bold hover:bg-blue-600 transition"
+              >
+                Sign in
+              </button>
             )}
+          </div>
+        </div>
+      </div>
 
-            {/* Desktop Sidebar Content */}
-            {!isMobileMenuOpen && (
-              <div className="hidden md:block">
-                {menuItems.map((item) => (
-                  <Link
-                    key={item.text}
-                    Icon={item.icon}
-                    text={item.text}
-                    path={item.path}
-                  />
-                ))}
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block md:w-[275px] md:fixed md:h-screen bg-white dark:bg-black">
+        <div className="flex flex-col h-full">
+          {/* Desktop Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+            <RouterLink to="/">
+              <img
+                src={theme === 'dark' ? '/white.svg' : '/black.svg'}
+                alt="Logo"
+                className="h-12 w-auto"
+                onDoubleClick={handleLogoDoubleClick}
+              />
+            </RouterLink>
+            <ThemeToggle />
+          </div>
 
-                {currentUser ? (
-                  <button
-                    onClick={handleLogout}
-                    className="w-full py-3 px-4 bg-red-500 text-white rounded-full font-bold hover:bg-red-600 transition flex items-center justify-center space-x-2"
-                  >
-                    <LogOut className="h-5 w-5" />
-                    <span>Logout</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setIsAuthOpen(true)}
-                    className="w-full py-3 px-4 bg-blue-500 text-white rounded-full font-bold hover:bg-blue-600 transition"
-                  >
-                    Sign in
-                  </button>
-                )}
-              </div>
+          {/* Desktop Content */}
+          <div className="flex-1 overflow-y-auto py-2">
+            {menuItems.map((item) => (
+              <Link
+                key={item.text}
+                Icon={item.icon}
+                text={item.text}
+                path={item.path}
+              />
+            ))}
+          </div>
+
+          {/* Desktop Footer */}
+          <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+            {currentUser ? (
+              <button
+                onClick={handleLogout}
+                className="w-full py-3 px-4 bg-red-500 text-white rounded-full font-bold hover:bg-red-600 transition flex items-center justify-center space-x-2"
+              >
+                <LogOut className="h-5 w-5" />
+                <span>Logout</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsAuthOpen(true)}
+                className="w-full py-3 px-4 bg-blue-500 text-white rounded-full font-bold hover:bg-blue-600 transition"
+              >
+                Sign in
+              </button>
             )}
           </div>
         </div>

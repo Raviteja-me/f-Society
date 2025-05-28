@@ -198,161 +198,172 @@ export function Feed() {
   };
 
   return (
-    <div className="divide-y divide-gray-200 dark:divide-gray-800 mt-12 md:mt-0"> {/* Added mt-12 for mobile */}
-      {posts.map((post) => (
-        <div key={post.id} className="p-4 space-y-4">
-          {/* Post Header */}
-          <div className="flex items-center space-x-3">
-            <img
-              src={post.authorAvatar || 'https://via.placeholder.com/40'}
-              alt={post.authorName}
-              className="h-10 w-10 rounded-full"
-            />
-            <div>
-              <div className="font-semibold dark:text-white">{post.authorName}</div>
-              <div className="text-sm text-gray-500">
-                {post.timestamp?.toDate().toLocaleDateString()}
+    <div className="divide-y divide-gray-200 dark:divide-gray-800">
+      {/* Mobile Header */}
+      <div className="md:hidden sticky top-0 z-10 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+        <h1 className="text-xl font-bold p-4 dark:text-white">Home</h1>
+      </div>
+
+      {/* Posts */}
+      <div className="mt-0 md:mt-0">
+        {posts.map((post) => (
+          <div key={post.id} className="p-4 space-y-4 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+            {/* Post Header */}
+            <div className="flex items-center space-x-3">
+              <img
+                src={post.authorAvatar || 'https://via.placeholder.com/40'}
+                alt={post.authorName}
+                className="h-10 w-10 rounded-full"
+              />
+              <div>
+                <div className="font-semibold dark:text-white">{post.authorName}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {post.timestamp?.toDate().toLocaleDateString()}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Post Content */}
-          <div className="text-gray-900 dark:text-white whitespace-pre-wrap">
-            {post.content}
-          </div>
-
-          {/* Post Media */}
-          {post.media && post.media.length > 0 && (
-            <div className="mt-3 space-y-3">
-              {post.media.map((media, index) => (
-                <div key={index}>
-                  {media.type === 'image' && (
-                    <img
-                      src={media.url}
-                      alt=""
-                      className="w-full max-h-[512px] object-contain rounded-2xl"
-                    />
-                  )}
-                  {media.type === 'video' && (
-                    <video
-                      src={media.url}
-                      controls
-                      className="w-full max-h-[512px] rounded-2xl"
-                    />
-                  )}
-                  {media.type === 'file' && (
-                    <a
-                      href={media.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-2 p-4 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700"
-                    >
-                      <FileText className="h-8 w-8 text-blue-500" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{media.filename}</p>
-                        <p className="text-xs text-gray-500">
-                          {media.size ? (media.size / (1024 * 1024)).toFixed(2) : '0'} MB
-                        </p>
-                      </div>
-                    </a>
-                  )}
-                </div>
-              ))}
+            {/* Post Content */}
+            <div className="text-gray-900 dark:text-white whitespace-pre-wrap break-words">
+              {post.content}
             </div>
-          )}
 
-          {/* Post Stats */}
-          <div className="flex items-center justify-around pt-2 border-t border-gray-200 dark:border-gray-800">
-            <button
-              onClick={() => setActiveCommentPost(activeCommentPost === post.id ? null : post.id)}
-              className="flex items-center space-x-2 text-gray-500 hover:text-blue-500"
-            >
-              <MessageCircle className="h-5 w-5" />
-              <span>{post.stats?.comments || 0}</span>
-            </button>
-            <button
-              onClick={() => handleLike(post.id)}
-              className={`flex items-center space-x-2 ${
-                currentUser?.uid && post.likes?.includes(currentUser.uid)
-                  ? 'text-red-500'
-                  : 'text-gray-500 hover:text-red-500'
-              }`}
-            >
-              <Heart className="h-5 w-5" />
-              <span>{post.likes?.length || 0}</span>
-            </button>
-            <button
-              onClick={() => handleShare(post)}
-              className="flex items-center space-x-2 text-gray-500 hover:text-blue-500"
-            >
-              <Share className="h-5 w-5" />
-              <span>{post.stats?.shares || 0}</span>
-            </button>
-          </div>
-
-          {/* Comment section */}
-          {activeCommentPost === post.id && (
-            <div className="mt-4 space-y-4">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleComment(post.id);
-                }}
-                className="flex space-x-2"
-              >
-                <input
-                  type="text"
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  placeholder="Write a comment..."
-                  className="flex-1 rounded-full px-4 py-2 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                  type="submit"
-                  disabled={!commentText.trim()}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Post
-                </button>
-              </form>
-
-              {/* Display comments */}
-              <div className="space-y-4">
-
-                {post.comments?.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map((comment) => (
-                  <div key={comment.id} className="flex space-x-2">
-                    <img
-                      src={comment.userPhotoURL || currentUser?.photoURL || '/default-avatar.png'}
-                      alt={comment.userDisplayName}
-                      className="h-8 w-8 rounded-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + comment.userDisplayName;
-                      }}
-                    />
-                    <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
-                      <div className="font-semibold dark:text-white">
-                        {comment.userDisplayName}
-                      </div>
-                      <div className="text-gray-700 dark:text-gray-300">
-                        {comment.text}
-                      </div>
-                      <button
-                        onClick={() => handleCommentLike(post.id, comment.id)}
-                        className={`flex items-center space-x-2 text-gray-500 hover:text-blue-500 ${
-                          currentUser && comment.likes?.includes(currentUser.uid) ? 'text-blue-500' : ''
-                        }`}
+            {/* Post Media */}
+            {post.media && post.media.length > 0 && (
+              <div className="rounded-xl overflow-hidden">
+                {post.media.map((media, index) => (
+                  <div key={index}>
+                    {media.type === 'image' && (
+                      <img
+                        src={media.url}
+                        alt="Post media"
+                        className="w-full h-auto object-cover"
+                      />
+                    )}
+                    {media.type === 'video' && (
+                      <video
+                        src={media.url}
+                        controls
+                        className="w-full h-auto"
+                      />
+                    )}
+                    {media.type === 'file' && (
+                      <a
+                        href={media.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 p-4 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700"
                       >
-                        <ThumbsUp className="h-4 w-4" />
-                        <span className="text-xs">{comment.likes?.length || 0}</span>
-                      </button>
-                    </div>
+                        <FileText className="h-8 w-8 text-blue-500" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{media.filename}</p>
+                          <p className="text-xs text-gray-500">
+                            {media.size ? (media.size / (1024 * 1024)).toFixed(2) : '0'} MB
+                          </p>
+                        </div>
+                      </a>
+                    )}
                   </div>
                 ))}
               </div>
+            )}
+
+            {/* Post Actions */}
+            <div className="flex items-center justify-around pt-2 border-t border-gray-200 dark:border-gray-800">
+              <button
+                onClick={() => setActiveCommentPost(activeCommentPost === post.id ? null : post.id)}
+                className="flex items-center space-x-2 text-gray-500 hover:text-blue-500 dark:hover:text-blue-400"
+              >
+                <MessageCircle className="h-5 w-5" />
+                <span>{post.stats?.comments || 0}</span>
+              </button>
+              <button
+                onClick={() => handleLike(post.id)}
+                className={`flex items-center space-x-2 ${
+                  currentUser?.uid && post.likes?.includes(currentUser.uid)
+                    ? 'text-red-500'
+                    : 'text-gray-500 hover:text-red-500 dark:hover:text-red-400'
+                }`}
+              >
+                <Heart className="h-5 w-5" />
+                <span>{post.likes?.length || 0}</span>
+              </button>
+              <button
+                onClick={() => handleShare(post)}
+                className="flex items-center space-x-2 text-gray-500 hover:text-blue-500 dark:hover:text-blue-400"
+              >
+                <Share className="h-5 w-5" />
+                <span>{post.stats?.shares || 0}</span>
+              </button>
             </div>
-          )}
-        </div>
-      ))}
+
+            {/* Comment Section */}
+            {activeCommentPost === post.id && (
+              <div className="mt-4 space-y-4">
+                {/* Comment Input */}
+                <div className="flex space-x-2">
+                  <img
+                    src={currentUser?.photoURL || '/default-avatar.png'}
+                    alt="Your avatar"
+                    className="h-8 w-8 rounded-full"
+                  />
+                  <div className="flex-1">
+                    <textarea
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      placeholder="Write a comment..."
+                      className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-transparent dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+                      rows={2}
+                    />
+                    <div className="flex justify-end mt-2">
+                      <button
+                        onClick={() => handleComment(post.id)}
+                        disabled={!commentText.trim()}
+                        className="px-4 py-2 bg-blue-500 text-white rounded-full text-sm font-bold hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Comment
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Comments List */}
+                <div className="space-y-4">
+                  {post.comments?.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map((comment) => (
+                    <div key={comment.id} className="flex space-x-2">
+                      <img
+                        src={comment.userPhotoURL || currentUser?.photoURL || '/default-avatar.png'}
+                        alt={comment.userDisplayName}
+                        className="h-8 w-8 rounded-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + comment.userDisplayName;
+                        }}
+                      />
+                      <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
+                        <div className="font-semibold dark:text-white">
+                          {comment.userDisplayName}
+                        </div>
+                        <div className="text-gray-700 dark:text-gray-300 break-words">
+                          {comment.text}
+                        </div>
+                        <button
+                          onClick={() => handleCommentLike(post.id, comment.id)}
+                          className={`flex items-center space-x-2 text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 ${
+                            currentUser && comment.likes?.includes(currentUser.uid) ? 'text-blue-500' : ''
+                          }`}
+                        >
+                          <ThumbsUp className="h-4 w-4" />
+                          <span className="text-xs">{comment.likes?.length || 0}</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

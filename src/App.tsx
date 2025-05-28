@@ -16,14 +16,19 @@ import { Widgets } from './components/Widgets';
 function App() {
   return (
     <div className="min-h-screen bg-white dark:bg-black">
-      <div className="max-w-[1500px] mx-auto flex">
-        {/* Left Sidebar */}
-        <div className="w-[275px] fixed h-screen">
+      {/* Mobile Header and Drawer */}
+      <div className="md:hidden">
+        <Sidebar />
+      </div>
+
+      <div className="flex flex-col md:flex-row">
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block md:w-[275px] md:fixed md:h-screen">
           <Sidebar />
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 ml-[275px] max-w-[600px] border-x border-gray-200 dark:border-gray-800">
+        <div className="w-full md:ml-[275px] md:max-w-[600px] border-x border-gray-200 dark:border-gray-800">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/explore" element={<Explore />} />
@@ -45,7 +50,7 @@ function App() {
         </div>
 
         {/* Right Widgets */}
-        <div className="w-[350px] hidden lg:block pl-8 pr-4">
+        <div className="hidden lg:block lg:w-[350px] lg:pl-8 lg:pr-4">
           <Widgets />
         </div>
       </div>

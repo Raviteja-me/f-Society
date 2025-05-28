@@ -16,5 +16,18 @@ service firebase.storage {
           request.resource.contentType.matches('application/vnd.android.package-archive')
         ));
     }
+
+    match /documents/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.uid == userId && 
+        request.resource.size < 10 * 1024 * 1024 && // 10MB limit
+        request.resource.contentType.matches('image/.*') && // Only allow images
+        (
+          request.resource.name.matches('.*/pan/.*') ||
+          request.resource.name.matches('.*/aadhaar/front/.*') ||
+          request.resource.name.matches('.*/aadhaar/back/.*')
+        );
+    }
   }
 }
