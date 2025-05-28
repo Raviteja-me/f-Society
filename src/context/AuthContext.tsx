@@ -8,13 +8,13 @@ import {
   onAuthStateChanged,
   User 
 } from 'firebase/auth';
-import { auth } from '../config/firebase';
+import { auth } from '../firebase.ts';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db } from '../firebase.ts';
 
 interface AuthContextType {
   currentUser: User | null;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: () => Promise<User | null>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -49,10 +49,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           photoURL: user.photoURL,
           isAdmin: false, // Default to non-admin
           createdAt: new Date(),
-          isPremium: false
+          isPremium: false,
+          status: 'active'
         });
       }
-      return user; // Return the user
+      return user;
     } catch (error) {
       console.error('Error signing in with Google:', error);
       return null;
@@ -64,7 +65,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUpWithEmail = async (email: string, password: string) => {
-    await createUserWithEmailAndPassword(auth, email, password);
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    const user = result.user;
+
+    // Create user document
+    await setDoc(doc(db, 'users', user.uid), {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      isAdmin: false,
+      createdAt: new Date(),
+      isPremium: false,
+      status: 'active'
+    });
   };
 
   const logout = async () => {

@@ -31,7 +31,7 @@ export function Widgets() {
 
   return (
     <div className="w-80 p-4 space-y-4">
-      <div className="sticky top-0 pt-2">
+      <div className="sticky top-0 pt-2 bg-white dark:bg-black">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
           <input
@@ -58,12 +58,14 @@ export function Widgets() {
       <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold dark:text-white">Who to follow</h2>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="px-4 py-2 bg-blue-500 text-white rounded-full text-sm font-bold hover:bg-blue-600 transition"
-          >
-            Dashboard
-          </button>
+          {currentUser && (
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="px-4 py-2 bg-blue-500 text-white rounded-full text-sm font-bold hover:bg-blue-600 transition"
+            >
+              Dashboard
+            </button>
+          )}
         </div>
         <div className="space-y-4">
           {suggestions.map((suggestion) => (

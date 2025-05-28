@@ -12,15 +12,50 @@ import {
   increment,
   getDoc
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db } from '../firebase.ts';
 import { MessageCircle, Repeat2, Heart, Share, Send, ThumbsUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { FileText, FileImage, FileVideo, FileArchive, FileSpreadsheet } from 'lucide-react';
 
+interface Media {
+  type: 'image' | 'video' | 'file';
+  url: string;
+  filename?: string;
+  size?: number;
+}
+
+interface Comment {
+  id: string;
+  uid: string;
+  text: string;
+  timestamp: string;
+  userDisplayName: string;
+  userPhotoURL: string;
+  createdAt: string;
+  likes: string[];
+}
+
+interface Post {
+  id: string;
+  authorName: string;
+  authorAvatar: string;
+  content: string;
+  timestamp: any;
+  media?: Media[];
+  likes: string[];
+  comments: Comment[];
+  stats: {
+    comments: number;
+    shares: number;
+    likes: number;
+  };
+}
+
 export function Feed() {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [commentText, setCommentText] = useState('');
-  const [activeCommentPost, setActiveCommentPost] = useState(null);
+  const [activeCommentPost, setActiveCommentPost] = useState<string | null>(null);
+  const [isPostingComment, setIsPostingComment] = useState(false);
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -40,7 +75,7 @@ export function Feed() {
               shares: doc.data().stats?.shares || 0,
               likes: doc.data().likes?.length || 0
             }
-          }));
+          })) as Post[];
           setPosts(posts);
         });
 
@@ -53,12 +88,11 @@ export function Feed() {
     initializePosts();
   }, []);
 
-  const handleComment = async (postId) => {
+  const handleComment = async (postId: string) => {
     if (!currentUser || !commentText.trim()) return;
 
     try {
-      // Optimistically update UI first
-      const newComment = {
+      const newComment: Comment = {
         id: crypto.randomUUID(),
         uid: currentUser.uid,
         text: commentText.trim(),
@@ -69,10 +103,8 @@ export function Feed() {
         likes: []
       };
 
-      // Clear input immediately but keep comment section open
       setCommentText('');
 
-      // Update Firestore
       const postRef = doc(db, 'posts', postId);
       const postDoc = await getDoc(postRef);
 
@@ -88,53 +120,19 @@ export function Feed() {
         'stats.comments': increment(1)
       });
 
-      // Don't close comment section after posting
-      // setActiveCommentPost(null); - removed this line
-
     } catch (error) {
       console.error('Error adding comment:', error);
-      // Optionally show error message to user
     }
   };
 
-  // Add loading state for comment posting
-  const [isPostingComment, setIsPostingComment] = useState(false);
-
-  // Update the form submission
-  <form
-    onSubmit={async (e) => {
-      e.preventDefault();
-      if (isPostingComment) return; // Prevent double submission
-      setIsPostingComment(true);
-      await handleComment(post.id);
-      setIsPostingComment(false);
-    }}
-    className="flex space-x-2"
-  >
-    <input
-      type="text"
-      value={commentText}
-      onChange={(e) => setCommentText(e.target.value)}
-      placeholder="Write a comment..."
-      className="flex-1 rounded-full px-4 py-2 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-    <button
-      type="submit"
-      disabled={!commentText.trim() || isPostingComment}
-      className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      {isPostingComment ? 'Posting...' : 'Post'}
-    </button>
-  </form>
-
-
-  // Update handleLike function
-  const handleLike = async (postId) => {
-    if (!currentUser) return;
+  const handleLike = async (postId: string) => {
+    if (!currentUser?.uid) return;
 
     try {
       const postRef = doc(db, 'posts', postId);
       const post = posts.find(p => p.id === postId);
+      if (!post) return;
+      
       const hasLiked = post.likes?.includes(currentUser.uid);
 
       await updateDoc(postRef, {
@@ -147,7 +145,7 @@ export function Feed() {
     }
   };
 
-  const handleShare = async (post) => {
+  const handleShare = async (post: Post) => {
     if (navigator.share) {
       try {
         await navigator.share({
@@ -166,7 +164,7 @@ export function Feed() {
     }
   };
 
-  const handleCommentLike = async (postId, commentId) => {
+  const handleCommentLike = async (postId: string, commentId: string) => {
     if (!currentUser) return;
 
     const postRef = doc(db, 'posts', postId);
@@ -176,7 +174,7 @@ export function Feed() {
       return;
     }
 
-    const comment = postDoc.data().comments?.find(c => c.id === commentId);
+    const comment = postDoc.data().comments?.find((c: Comment) => c.id === commentId);
     if (!comment) {
       console.error('Comment not found');
       return;
@@ -185,12 +183,12 @@ export function Feed() {
     const hasLikedComment = comment.likes?.includes(currentUser.uid);
 
     await updateDoc(postRef, {
-      comments: postDoc.data().comments.map(c => {
+      comments: postDoc.data().comments.map((c: Comment) => {
         if (c.id === commentId) {
           return {
             ...c,
             likes: hasLikedComment
-              ? c.likes.filter((uid) => uid !== currentUser.uid)
+              ? c.likes.filter((uid: string) => uid !== currentUser.uid)
               : [...(c.likes || []), currentUser.uid]
           };
         }
@@ -198,7 +196,6 @@ export function Feed() {
       })
     });
   };
-
 
   return (
     <div className="divide-y divide-gray-200 dark:divide-gray-800 mt-12 md:mt-0"> {/* Added mt-12 for mobile */}
@@ -254,7 +251,7 @@ export function Feed() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{media.filename}</p>
                         <p className="text-xs text-gray-500">
-                          {(media.size / (1024 * 1024)).toFixed(2)} MB
+                          {media.size ? (media.size / (1024 * 1024)).toFixed(2) : '0'} MB
                         </p>
                       </div>
                     </a>
@@ -276,7 +273,7 @@ export function Feed() {
             <button
               onClick={() => handleLike(post.id)}
               className={`flex items-center space-x-2 ${
-                post.likes?.includes(currentUser?.uid)
+                currentUser?.uid && post.likes?.includes(currentUser.uid)
                   ? 'text-red-500'
                   : 'text-gray-500 hover:text-red-500'
               }`}
@@ -341,7 +338,9 @@ export function Feed() {
                       </div>
                       <button
                         onClick={() => handleCommentLike(post.id, comment.id)}
-                        className={`flex items-center space-x-2 text-gray-500 hover:text-blue-500 ${comment.likes?.includes(currentUser?.uid) ? 'text-blue-500' : ''}`}
+                        className={`flex items-center space-x-2 text-gray-500 hover:text-blue-500 ${
+                          currentUser && comment.likes?.includes(currentUser.uid) ? 'text-blue-500' : ''
+                        }`}
                       >
                         <ThumbsUp className="h-4 w-4" />
                         <span className="text-xs">{comment.likes?.length || 0}</span>

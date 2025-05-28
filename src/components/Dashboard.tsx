@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../config/firebase';
+import { db, storage } from '../firebase.ts';
 import { useAuth } from '../context/AuthContext';
 import { Upload, X, FileText, Video, Image as ImageIcon } from 'lucide-react';
 
@@ -12,11 +12,19 @@ interface MediaFile {
   preview?: string;
 }
 
+interface User {
+  id: string;
+  displayName: string | null;
+  email: string | null;
+  photoURL: string | null;
+  isPremium?: boolean;
+}
+
 export function Dashboard() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [content, setContent] = useState('');
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -29,7 +37,7 @@ export function Dashboard() {
     const usersData = usersSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    })) as User[];
     setUsers(usersData);
   };
 

@@ -1,45 +1,54 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
-import { Feed } from './components/Feed';
-import { Widgets } from './components/Widgets';
-import { Dashboard } from './components/Dashboard';
+import { Home } from './pages/Home';
+import { Explore } from './pages/Explore';
+import { Notifications } from './pages/Notifications';
+import { Messages } from './pages/Messages';
+import { Communities } from './pages/Communities';
+import { Profile } from './pages/Profile';
+import { Verified } from './pages/Verified';
+import { Courses } from './pages/Courses';
+import { Dashboard } from './pages/Dashboard';
 import { AdminRoute } from './components/AdminRoute';
+import { Widgets } from './components/Widgets';
 
 function App() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      <Routes>
-        {/* Dashboard Route */}
-        <Route
-          path="/dashboard"
-          element={
-            <AdminRoute>
-              <Dashboard />
-            </AdminRoute>
-          }
-        />
+    <div className="min-h-screen bg-white dark:bg-black">
+      <div className="max-w-[1500px] mx-auto flex">
+        {/* Left Sidebar */}
+        <div className="w-[275px] fixed h-screen">
+          <Sidebar />
+        </div>
 
-        {/* Main Layout Route */}
-        <Route
-          path="/*"
-          element={
-            <div className="md:flex justify-center">
-              <div className="flex w-full max-w-[1265px]">
-                <Sidebar />
-                <main className="ml-0 md:ml-[275px] flex-1 flex">
-                  <div className="w-full md:w-[600px] border-x border-gray-200 dark:border-gray-800">
-                    <Feed />
-                  </div>
-                  <div className="hidden lg:block w-[350px] pl-8">
-                    <Widgets />
-                  </div>
-                </main>
-              </div>
-            </div>
-          }
-        />
-      </Routes>
+        {/* Main Content */}
+        <div className="flex-1 ml-[275px] max-w-[600px] border-x border-gray-200 dark:border-gray-800">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/communities" element={<Communities />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/verified" element={<Verified />} />
+            <Route
+              path="/dashboard"
+              element={
+                <AdminRoute>
+                  <Dashboard />
+                </AdminRoute>
+              }
+            />
+          </Routes>
+        </div>
+
+        {/* Right Widgets */}
+        <div className="w-[350px] hidden lg:block pl-8 pr-4">
+          <Widgets />
+        </div>
+      </div>
     </div>
   );
 }

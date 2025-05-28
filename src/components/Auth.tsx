@@ -8,7 +8,7 @@ interface AuthModalProps {
   onSuccess: () => void;
 }
 
-export function AuthModal({ isOpen, onClose, onSuccess }) {
+export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { theme } = useTheme();
   const { signInWithGoogle } = useAuth();

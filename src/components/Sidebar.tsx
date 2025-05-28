@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Search, Bell, Mail, BookMarked, ListTodo, Users, BadgeCheck, User, MoreHorizontal, LogOut, Menu, ArrowLeft } from 'lucide-react';
+import { Home, Search, Bell, Mail, BookOpen, Users, BadgeCheck, User, LogOut, Menu, ArrowLeft } from 'lucide-react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { Link } from './Link';
 import { ThemeToggle } from './ThemeToggle';
@@ -20,12 +20,10 @@ export function Sidebar() {
     { icon: Search, text: 'Explore', path: '/explore' },
     { icon: Bell, text: 'Notifications', path: '/notifications' },
     { icon: Mail, text: 'Messages', path: '/messages' },
-    { icon: ListTodo, text: 'Lists', path: '/lists' },
-    { icon: BookMarked, text: 'Bookmarks', path: '/bookmarks' },
+    { icon: BookOpen, text: 'Courses', path: '/courses' },
     { icon: Users, text: 'Communities', path: '/communities' },
     { icon: BadgeCheck, text: 'Verified', path: '/verified' },
-    { icon: User, text: 'Profile', path: '/profile' },
-    { icon: MoreHorizontal, text: 'More', path: '/more' }
+    { icon: User, text: 'Profile', path: '/profile' }
   ];
 
   const handleLogout = async () => {
@@ -48,12 +46,6 @@ export function Sidebar() {
     closeMobileMenu();
   }, [location]);
 
-  // Remove the goBack function and replace it with just using closeMobileMenu
-  const goBack = () => {
-    closeMobileMenu();
-  };
-
-  // Add this new function to handle double click
   const handleLogoDoubleClick = () => {
     if (currentUser) {
       navigate('/dashboard');
@@ -62,14 +54,14 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile Header - Visible when sidebar is closed */}
+      {/* Mobile Header */}
       {!isMobileMenuOpen && (
-        <div className="md:hidden fixed top-0 left-0 w-full bg-white dark:bg-gray-900 p-2 flex items-center justify-between z-50">
+        <div className="md:hidden fixed top-0 left-0 w-full bg-white dark:bg-black p-2 flex items-center justify-between z-50">
           <RouterLink to="/" className="flex-grow text-center">
             <img
               src={theme === 'dark' ? '/white.svg' : '/black.svg'}
               alt="Logo"
-              className="h-12 w-auto mx-auto" // Increased height for better visibility
+              className="h-12 w-auto mx-auto"
               onDoubleClick={handleLogoDoubleClick}
             />
           </RouterLink>
@@ -79,24 +71,24 @@ export function Sidebar() {
         </div>
       )}
 
-      {/* Sidebar - Visible on desktop and when mobile menu is open */}
-      <div className={`fixed h-screen w-64 bg-white dark:bg-gray-900 md:block ${isMobileMenuOpen ? 'block z-40' : 'hidden md:flex'}`}>
+      {/* Sidebar */}
+      <div className={`fixed h-screen w-64 bg-white dark:bg-black md:block ${isMobileMenuOpen ? 'block z-40' : 'hidden md:flex'}`}>
         <div className="flex flex-col h-full">
           <div className="space-y-2 p-2">
-            {/* Desktop Header - Visible on desktop */}
+            {/* Desktop Header */}
             <div className="hidden md:flex items-center justify-between px-2">
               <RouterLink to="/">
                 <img
                   src={theme === 'dark' ? '/white.svg' : '/black.svg'}
                   alt="Logo"
-                  className="h-15 w-auto" // Larger size for desktop
+                  className="h-15 w-auto"
                   onDoubleClick={handleLogoDoubleClick}
                 />
               </RouterLink>
               <ThemeToggle />
             </div>
 
-            {/* Mobile Sidebar Content - Visible when mobile menu is open */}
+            {/* Mobile Sidebar Content */}
             {isMobileMenuOpen && (
               <>
                 <div className="md:hidden flex flex-col items-start p-2">
@@ -108,8 +100,8 @@ export function Sidebar() {
                       <img
                         src={theme === 'dark' ? '/white.svg' : '/black.svg'}
                         alt="Logo"
-                        className="h-8 w-auto" // Reduced logo size in mobile
-                        style={{ maxHeight: '2rem', overflow: 'hidden' }} // Cropping logo and size adjust
+                        className="h-8 w-auto"
+                        style={{ maxHeight: '2rem', overflow: 'hidden' }}
                       />
                     </RouterLink>
                     <div className="flex justify-end">
@@ -118,14 +110,13 @@ export function Sidebar() {
                   </div>
                 </div>
 
-
                 {menuItems.map((item) => (
                   <Link
                     key={item.text}
                     Icon={item.icon}
                     text={item.text}
                     path={item.path}
-                    onClick={closeMobileMenu} // Close sidebar on link click
+                    onClick={closeMobileMenu}
                   />
                 ))}
 
@@ -148,8 +139,8 @@ export function Sidebar() {
               </>
             )}
 
-             {/* Desktop Sidebar Content - Always visible on desktop */}
-             {!isMobileMenuOpen && (
+            {/* Desktop Sidebar Content */}
+            {!isMobileMenuOpen && (
               <div className="hidden md:block">
                 {menuItems.map((item) => (
                   <Link
