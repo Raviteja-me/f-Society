@@ -44,6 +44,10 @@ export default defineConfig({
       'firebase/firestore',
       'firebase/storage',
       'lucide-react'
-    ]
+    ],
+    exclude: ['firebase-admin']
+  },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
   }
 })
