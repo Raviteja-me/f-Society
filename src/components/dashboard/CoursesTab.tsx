@@ -19,8 +19,8 @@ export function CoursesTab({ courses, setError, fetchCourses }: CoursesTabProps)
     price: 0,
     originalPrice: 0,
     features: [''],
-    category: 'web',
-    level: 'frontend',
+    category: '',
+    level: '',
     image: ''
   });
 
@@ -40,8 +40,8 @@ export function CoursesTab({ courses, setError, fetchCourses }: CoursesTabProps)
         price: 0,
         originalPrice: 0,
         features: [''],
-        category: 'web',
-        level: 'frontend',
+        category: '',
+        level: '',
         image: ''
       });
       fetchCourses();
@@ -80,26 +80,45 @@ export function CoursesTab({ courses, setError, fetchCourses }: CoursesTabProps)
     }
   };
 
-  const handleAddFeature = () => {
-    setNewCourse(prev => ({
-      ...prev,
-      features: [...(prev.features || []), '']
-    }));
-  };
-
-  const handleRemoveFeature = (index: number) => {
-    setNewCourse(prev => ({
-      ...prev,
-      features: prev.features?.filter((_, i) => i !== index)
-    }));
-  };
-
   const handleFeatureChange = (index: number, value: string) => {
     if (editingCourse) {
       setEditingCourse({
         ...editingCourse,
         features: editingCourse.features.map((f, i) => i === index ? value : f)
       });
+    } else {
+      setNewCourse(prev => ({
+        ...prev,
+        features: prev.features?.map((f, i) => i === index ? value : f) || ['']
+      }));
+    }
+  };
+
+  const handleAddFeature = () => {
+    if (editingCourse) {
+      setEditingCourse({
+        ...editingCourse,
+        features: [...editingCourse.features, '']
+      });
+    } else {
+      setNewCourse(prev => ({
+        ...prev,
+        features: [...(prev.features || []), '']
+      }));
+    }
+  };
+
+  const handleRemoveFeature = (index: number) => {
+    if (editingCourse) {
+      setEditingCourse({
+        ...editingCourse,
+        features: editingCourse.features.filter((_, i) => i !== index)
+      });
+    } else {
+      setNewCourse(prev => ({
+        ...prev,
+        features: prev.features?.filter((_, i) => i !== index) || ['']
+      }));
     }
   };
 
@@ -234,29 +253,26 @@ export function CoursesTab({ courses, setError, fetchCourses }: CoursesTabProps)
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Category
                   </label>
-                  <select
+                  <input
+                    type="text"
                     value={newCourse.category}
-                    onChange={(e) => setNewCourse(prev => ({ ...prev, category: e.target.value as 'web' | 'mobile' | 'mind' }))}
+                    onChange={(e) => setNewCourse(prev => ({ ...prev, category: e.target.value }))}
+                    placeholder="e.g., Web Development, Mobile Apps, Mind Training"
                     className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
-                  >
-                    <option value="web">Web Development</option>
-                    <option value="mobile">Mobile Development</option>
-                    <option value="mind">Mind Training</option>
-                  </select>
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Level
                   </label>
-                  <select
+                  <input
+                    type="text"
                     value={newCourse.level}
-                    onChange={(e) => setNewCourse(prev => ({ ...prev, level: e.target.value as 'frontend' | 'fullstack' }))}
+                    onChange={(e) => setNewCourse(prev => ({ ...prev, level: e.target.value }))}
+                    placeholder="e.g., Beginner, Advanced, Expert"
                     className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
-                  >
-                    <option value="frontend">Frontend</option>
-                    <option value="fullstack">Full Stack</option>
-                  </select>
+                  />
                 </div>
               </div>
 
@@ -271,6 +287,7 @@ export function CoursesTab({ courses, setError, fetchCourses }: CoursesTabProps)
                         type="text"
                         value={feature}
                         onChange={(e) => handleFeatureChange(index, e.target.value)}
+                        placeholder="Enter feature"
                         className="flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
                       />
                       <button
@@ -380,29 +397,26 @@ export function CoursesTab({ courses, setError, fetchCourses }: CoursesTabProps)
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Category
                   </label>
-                  <select
+                  <input
+                    type="text"
                     value={editingCourse.category}
-                    onChange={(e) => setEditingCourse({ ...editingCourse, category: e.target.value as 'web' | 'mobile' | 'mind' })}
+                    onChange={(e) => setEditingCourse({ ...editingCourse, category: e.target.value })}
+                    placeholder="e.g., Web Development, Mobile Apps, Mind Training"
                     className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
-                  >
-                    <option value="web">Web Development</option>
-                    <option value="mobile">Mobile Development</option>
-                    <option value="mind">Mind Training</option>
-                  </select>
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Level
                   </label>
-                  <select
+                  <input
+                    type="text"
                     value={editingCourse.level}
-                    onChange={(e) => setEditingCourse({ ...editingCourse, level: e.target.value as 'frontend' | 'fullstack' })}
+                    onChange={(e) => setEditingCourse({ ...editingCourse, level: e.target.value })}
+                    placeholder="e.g., Beginner, Advanced, Expert"
                     className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
-                  >
-                    <option value="frontend">Frontend</option>
-                    <option value="fullstack">Full Stack</option>
-                  </select>
+                  />
                 </div>
               </div>
 
@@ -417,15 +431,11 @@ export function CoursesTab({ courses, setError, fetchCourses }: CoursesTabProps)
                         type="text"
                         value={feature}
                         onChange={(e) => handleFeatureChange(index, e.target.value)}
+                        placeholder="Enter feature"
                         className="flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
                       />
                       <button
-                        onClick={() => {
-                          setEditingCourse({
-                            ...editingCourse,
-                            features: editingCourse.features.filter((_, i) => i !== index)
-                          });
-                        }}
+                        onClick={() => handleRemoveFeature(index)}
                         className="p-2 text-red-500 hover:text-red-600"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -433,12 +443,7 @@ export function CoursesTab({ courses, setError, fetchCourses }: CoursesTabProps)
                     </div>
                   ))}
                   <button
-                    onClick={() => {
-                      setEditingCourse({
-                        ...editingCourse,
-                        features: [...editingCourse.features, '']
-                      });
-                    }}
+                    onClick={handleAddFeature}
                     className="flex items-center space-x-1 text-blue-500 hover:text-blue-600 text-sm"
                   >
                     <Plus className="h-4 w-4" />

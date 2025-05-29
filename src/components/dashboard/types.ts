@@ -66,8 +66,8 @@ export interface Course {
   price: number;
   originalPrice?: number;
   features: string[];
-  category: 'web' | 'mobile' | 'mind';
-  level: 'frontend' | 'fullstack';
+  category: string;
+  level: string;
   image: string;
 }
 
