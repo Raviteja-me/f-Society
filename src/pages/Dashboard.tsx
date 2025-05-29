@@ -85,11 +85,13 @@ export function Dashboard() {
 
         setStudents(studentsData);
         setPaymentRequests(paymentsData);
+        setError(''); // Clear any previous errors
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
-        setError('Failed to load dashboard data');
+        setError('Failed to load dashboard data. Please try again later.');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchData();
