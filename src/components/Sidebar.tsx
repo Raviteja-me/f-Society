@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Search, Bell, Mail, BookOpen, Users, BadgeCheck, User, LogOut, Menu, X } from 'lucide-react';
+import { Home, Bell, BookOpen, Users, Key, User, LogOut, Menu, X } from 'lucide-react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { Link } from './Link';
 import { ThemeToggle } from './ThemeToggle';
@@ -17,12 +17,10 @@ export function Sidebar() {
 
   const menuItems = [
     { icon: Home, text: 'Home', path: '/' },
-    { icon: Search, text: 'Explore', path: '/explore' },
     { icon: Bell, text: 'Notifications', path: '/notifications' },
-    { icon: Mail, text: 'Messages', path: '/messages' },
     { icon: BookOpen, text: 'Courses', path: '/courses' },
     { icon: Users, text: 'Communities', path: '/communities' },
-    { icon: BadgeCheck, text: 'Verified', path: '/verified' },
+    { icon: Key, text: 'API', path: '/api' },
     { icon: User, text: 'Profile', path: '/profile' }
   ];
 

@@ -1,9 +1,9 @@
 import { Routes, Route } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { Home } from './pages/Home';
-import { Explore } from './pages/Explore';
+
 import { Notifications } from './pages/Notifications';
-import { Messages } from './pages/Messages';
+
 import { Communities } from './pages/Communities';
 import { Profile } from './pages/Profile';
 import { Verified } from './pages/Verified';
@@ -24,9 +24,9 @@ function App() {
       <div className="w-full md:hidden">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/explore" element={<Explore />} />
+       
           <Route path="/notifications" element={<Notifications />} />
-          <Route path="/messages" element={<Messages />} />
+       
           <Route path="/communities" element={<Communities />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/profile" element={<Profile />} />
@@ -54,9 +54,9 @@ function App() {
           <div className="flex-1 max-w-[600px] w-full border-x border-gray-200 dark:border-gray-800 flex flex-col min-h-screen">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/explore" element={<Explore />} />
+       
               <Route path="/notifications" element={<Notifications />} />
-              <Route path="/messages" element={<Messages />} />
+        
               <Route path="/communities" element={<Communities />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/profile" element={<Profile />} />
