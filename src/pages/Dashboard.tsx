@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, addDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.ts';
 import { CheckCircle, XCircle, Eye } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface Student {
   id: string;
@@ -37,6 +39,8 @@ interface PaymentRequest {
 }
 
 export function Dashboard() {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
   const [paymentRequests, setPaymentRequests] = useState<PaymentRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,56 +50,105 @@ export function Dashboard() {
   const [showDocuments, setShowDocuments] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const verifyAdminAndFetchData = async () => {
+      if (!currentUser) {
+        setError('Please log in to access the dashboard');
+        setLoading(false);
+        navigate('/');
+        return;
+      }
+
       try {
+        // Verify admin status
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (!userDoc.exists() || !userDoc.data()?.isAdmin) {
+          setError('You do not have permission to access the dashboard');
+          setLoading(false);
+          navigate('/');
+          return;
+        }
+
+        console.log('Starting to fetch dashboard data...');
+        
         // Fetch students
         const studentsSnapshot = await getDocs(collection(db, 'students'));
+        console.log('Students snapshot:', studentsSnapshot.docs.length, 'documents found');
+        
         const studentsData: Student[] = studentsSnapshot.docs.map((doc: any) => {
           const data = doc.data();
+          console.log('Processing student document:', doc.id, data);
+          
+          // Validate required fields
+          if (!data.registrationDate) {
+            console.warn('Missing registrationDate for student:', doc.id);
+          }
+          
           return {
             id: doc.id,
-            name: data.name,
-            email: data.email,
-            pan: data.pan,
-            upi: data.upi,
-            aadhaar: data.aadhaar,
-            bankDetails: data.bankDetails,
-            documents: data.documents,
-            status: data.status,
-            registrationDate: data.registrationDate.toDate()
+            name: data.name || '',
+            email: data.email || '',
+            pan: data.pan || '',
+            upi: data.upi || '',
+            aadhaar: data.aadhaar || '',
+            bankDetails: {
+              accountNumber: data.bankDetails?.accountNumber || '',
+              ifscCode: data.bankDetails?.ifscCode || '',
+              accountHolderName: data.bankDetails?.accountHolderName || ''
+            },
+            documents: {
+              panImage: data.documents?.panImage || '',
+              aadhaarFront: data.documents?.aadhaarFront || '',
+              aadhaarBack: data.documents?.aadhaarBack || ''
+            },
+            status: data.status || 'pending',
+            registrationDate: data.registrationDate?.toDate() || new Date()
           };
         });
 
         // Fetch payment requests
         const paymentsSnapshot = await getDocs(collection(db, 'payment_requests'));
+        console.log('Payments snapshot:', paymentsSnapshot.docs.length, 'documents found');
+        
         const paymentsData: PaymentRequest[] = paymentsSnapshot.docs.map((doc: any) => {
           const data = doc.data();
+          console.log('Processing payment document:', doc.id, data);
+          
+          // Validate required fields
+          if (!data.createdAt) {
+            console.warn('Missing createdAt for payment:', doc.id);
+          }
+          
           return {
             id: doc.id,
-            studentId: data.studentId,
-            studentEmail: data.studentEmail,
-            planId: data.planId,
-            planName: data.planName,
-            amount: data.amount,
-            status: data.status,
-            createdAt: data.createdAt.toDate(),
+            studentId: data.studentId || '',
+            studentEmail: data.studentEmail || '',
+            planId: data.planId || '',
+            planName: data.planName || '',
+            amount: data.amount || 0,
+            status: data.status || 'pending',
+            createdAt: data.createdAt?.toDate() || new Date(),
             verifiedAt: data.verifiedAt?.toDate()
           };
         });
 
+        console.log('Successfully processed all data');
         setStudents(studentsData);
         setPaymentRequests(paymentsData);
-        setError(''); // Clear any previous errors
+        setError('');
       } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setError('Failed to load dashboard data. Please try again later.');
+        console.error('Detailed error in fetchData:', err);
+        if (err instanceof Error) {
+          setError(`Failed to load dashboard data: ${err.message}`);
+        } else {
+          setError('Failed to load dashboard data. Please try again later.');
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, []);
+    verifyAdminAndFetchData();
+  }, [currentUser, navigate]);
 
   const handleVerifyStudent = async (studentId: string) => {
     try {
