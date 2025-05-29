@@ -146,7 +146,7 @@ export function Sidebar() {
       </div>
 
       {/* Desktop Sidebar */}
-      <div className="hidden md:block md:w-[275px] md:fixed md:h-screen bg-white dark:bg-black">
+      <div className="hidden md:block md:w-[275px] bg-white dark:bg-black">
         <div className="flex flex-col h-full">
           {/* Desktop Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
