@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "postbuild": "copy public\\_redirects dist\\_redirects"
+    "postbuild": "cp public/_redirects dist/_redirects || copy public\\_redirects dist\\_redirects"
   },
   "dependencies": {
     "@firebase/auth": "^1.9.1",
