@@ -51,7 +51,11 @@ export function Dashboard() {
 
   useEffect(() => {
     const verifyAdminAndFetchData = async () => {
+      console.log('Starting admin verification process...');
+      console.log('Current user:', currentUser);
+      
       if (!currentUser) {
+        console.error('No current user found');
         setError('Please log in to access the dashboard');
         setLoading(false);
         navigate('/');
@@ -59,29 +63,41 @@ export function Dashboard() {
       }
 
       try {
+        console.log('Fetching user document for:', currentUser.uid);
         // Verify admin status
         const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-        if (!userDoc.exists() || !userDoc.data()?.isAdmin) {
+        const userData = userDoc.data();
+        
+        console.log('User document exists:', userDoc.exists());
+        console.log('User data:', userData);
+        console.log('Is admin:', userData?.isAdmin);
+        
+        if (!userDoc.exists()) {
+          console.error('User document does not exist');
+          setError('User profile not found');
+          setLoading(false);
+          navigate('/');
+          return;
+        }
+
+        if (!userData?.isAdmin) {
+          console.error('User is not an admin');
           setError('You do not have permission to access the dashboard');
           setLoading(false);
           navigate('/');
           return;
         }
 
-        console.log('Starting to fetch dashboard data...');
+        console.log('Admin verification successful, fetching data...');
         
         // Fetch students
+        console.log('Attempting to fetch students collection...');
         const studentsSnapshot = await getDocs(collection(db, 'students'));
         console.log('Students snapshot:', studentsSnapshot.docs.length, 'documents found');
         
         const studentsData: Student[] = studentsSnapshot.docs.map((doc: any) => {
           const data = doc.data();
           console.log('Processing student document:', doc.id, data);
-          
-          // Validate required fields
-          if (!data.registrationDate) {
-            console.warn('Missing registrationDate for student:', doc.id);
-          }
           
           return {
             id: doc.id,
@@ -106,17 +122,13 @@ export function Dashboard() {
         });
 
         // Fetch payment requests
+        console.log('Attempting to fetch payment_requests collection...');
         const paymentsSnapshot = await getDocs(collection(db, 'payment_requests'));
         console.log('Payments snapshot:', paymentsSnapshot.docs.length, 'documents found');
         
         const paymentsData: PaymentRequest[] = paymentsSnapshot.docs.map((doc: any) => {
           const data = doc.data();
           console.log('Processing payment document:', doc.id, data);
-          
-          // Validate required fields
-          if (!data.createdAt) {
-            console.warn('Missing createdAt for payment:', doc.id);
-          }
           
           return {
             id: doc.id,
