@@ -2,9 +2,13 @@ import * as functions from 'firebase-functions/v2';
 import * as admin from 'firebase-admin';
 import * as crypto from 'crypto';
 import fetch from 'node-fetch';
+import cors from 'cors';
 
 admin.initializeApp();
 const db = admin.firestore();
+
+// Initialize CORS middleware
+const corsHandler = cors({ origin: true });
 
 // Initialize API token in Firestore
 async function initializeApiToken() {
@@ -213,70 +217,73 @@ export const verifyPaymentRequest = functions.https.onRequest(async (req, res) =
 
 // Course Purchase Function
 export const purchaseCourse = functions.https.onRequest(async (req, res) => {
-  if (req.method !== 'POST') {
-    res.status(405).send('Method Not Allowed');
-    return;
-  }
-
-  const { userId, courseId } = req.body;
-
-  if (!userId || !courseId) {
-    res.status(400).json({ error: 'Missing required fields' });
-    return;
-  }
-
-  try {
-    const courseDoc = await db.collection('courses').doc(courseId).get();
-    if (!courseDoc.exists) {
-      res.status(404).json({ error: 'Course not found' });
+  // Enable CORS
+  return corsHandler(req, res, async () => {
+    if (req.method !== 'POST') {
+      res.status(405).send('Method Not Allowed');
       return;
     }
 
-    const courseData = courseDoc.data();
-    if (!courseData) {
-      res.status(404).json({ error: 'Course data not found' });
+    const { userId, courseId } = req.body;
+
+    if (!userId || !courseId) {
+      res.status(400).json({ error: 'Missing required fields' });
       return;
     }
 
-    const token = await getApiToken();
+    try {
+      const courseDoc = await db.collection('courses').doc(courseId).get();
+      if (!courseDoc.exists) {
+        res.status(404).json({ error: 'Course not found' });
+        return;
+      }
 
-    const response = await fetch('https://generatepaymentlink-net74gl7ba-uc.a.run.app', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        amount: courseData.price,
-        currency: 'INR',
-        planId: courseId,
-        planName: courseData.title
-      })
-    });
+      const courseData = courseDoc.data();
+      if (!courseData) {
+        res.status(404).json({ error: 'Course data not found' });
+        return;
+      }
 
-    const data = await response.json();
+      const token = await getApiToken();
 
-    if (!response.ok) {
-      res.status(500).json({ error: 'Payment link generation failed', detail: data });
-      return;
+      const response = await fetch('https://generatepaymentlink-net74gl7ba-uc.a.run.app', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          amount: courseData.price,
+          currency: 'INR',
+          planId: courseId,
+          planName: courseData.title
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        res.status(500).json({ error: 'Payment link generation failed', detail: data });
+        return;
+      }
+
+      await db.collection('purchases').doc(`${userId}_${courseId}`).set({
+        userId,
+        courseId,
+        status: 'pending',
+        orderId: data.orderId,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      res.status(200).json({ 
+        paymentUrl: data.paymentUrl,
+        orderDetails: data
+      });
+    } catch (error) {
+      console.error('Error processing course purchase:', error);
+      res.status(500).json({ error: 'Failed to process purchase' });
     }
-
-    await db.collection('purchases').doc(`${userId}_${courseId}`).set({
-      userId,
-      courseId,
-      status: 'pending',
-      orderId: data.orderId,
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    res.status(200).json({ 
-      paymentUrl: data.paymentUrl,
-      orderDetails: data
-    });
-  } catch (error) {
-    console.error('Error processing course purchase:', error);
-    res.status(500).json({ error: 'Failed to process purchase' });
-  }
+  });
 });
 
 // Verify Course Purchase
