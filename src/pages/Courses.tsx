@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { CheckCircle, ArrowRight, Play } from 'lucide-react';
@@ -62,15 +62,34 @@ export function Courses() {
     setError('');
 
     try {
-      // Make the payment request
-      const response = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/purchaseCourse', {
+      // Get course details first
+      const courseDoc = await getDoc(doc(db, 'courses', courseId));
+      if (!courseDoc.exists()) {
+        throw new Error('Course not found');
+      }
+
+      const courseData = courseDoc.data();
+
+      // Get the token from Firebase config
+      const configDoc = await getDoc(doc(db, 'config', 'api'));
+      if (!configDoc.exists()) {
+        throw new Error('API configuration not found');
+      }
+      const token = configDoc.data().token;
+
+      // Make the payment request to generatePaymentLink
+      const response = await fetch('https://us-central1-lazy-job-seeker-4b29b.cloudfunctions.net/generatePaymentLink', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          userId: currentUser.uid,
-          courseId
+          amount: courseData.price * 100, // Convert to paise for Razorpay
+          currency: 'INR',
+          planId: courseId,
+          planName: courseData.title,
+          studentId: currentUser.uid
         })
       });
 
@@ -82,15 +101,15 @@ export function Courses() {
 
       // Initialize Razorpay
       const options = {
-        key: data.orderDetails.razorpayKey,
-        amount: data.orderDetails.amount,
-        currency: data.orderDetails.currency,
+        key: data.razorpayKey,
+        amount: data.amount,
+        currency: data.currency,
         name: "f-Society",
-        description: "Course Purchase",
-        order_id: data.orderDetails.orderId,
+        description: courseData.title,
+        order_id: data.orderId,
         handler: function (response: any) {
           // Handle successful payment
-          verifyPayment(response);
+          verifyPayment(response, courseId);
         },
         prefill: {
           name: currentUser.displayName || '',
@@ -111,12 +130,20 @@ export function Courses() {
     }
   };
 
-  const verifyPayment = async (response: any) => {
+  const verifyPayment = async (response: any, courseId: string) => {
     try {
-      const verifyResponse = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/verifyCoursePurchase', {
+      // Get the token from Firebase config
+      const configDoc = await getDoc(doc(db, 'config', 'api'));
+      if (!configDoc.exists()) {
+        throw new Error('API configuration not found');
+      }
+      const token = configDoc.data().token;
+
+      const verifyResponse = await fetch('https://us-central1-lazy-job-seeker-4b29b.cloudfunctions.net/verifyPaymentStatus', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           orderId: response.razorpay_order_id,
@@ -128,7 +155,7 @@ export function Courses() {
       const data = await verifyResponse.json();
       if (data.status === 'success') {
         // Add course to enrolled courses
-        setEnrolledCourses(prev => [...prev, data.planId]);
+        setEnrolledCourses(prev => [...prev, courseId]);
         setError('');
       } else {
         setError('Payment verification failed');
