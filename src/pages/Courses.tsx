@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
-import { CheckCircle, ArrowRight } from 'lucide-react';
+import { CheckCircle, ArrowRight, Play } from 'lucide-react';
 import { Course } from '../components/dashboard/types';
+import { useNavigate } from 'react-router-dom';
 
 export function Courses() {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [courses, setCourses] = useState<Course[]>([]);
+  const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'web' | 'mobile' | 'mind'>('all');
 
   useEffect(() => {
@@ -29,8 +32,25 @@ export function Courses() {
       }
     };
 
+    const fetchEnrolledCourses = async () => {
+      if (!currentUser) return;
+
+      try {
+        const enrollmentsQuery = query(
+          collection(db, 'enrollments'),
+          where('studentId', '==', currentUser.uid)
+        );
+        const enrollmentsSnapshot = await getDocs(enrollmentsQuery);
+        const enrolledIds = enrollmentsSnapshot.docs.map((doc: { data: () => { courseId: string } }) => doc.data().courseId);
+        setEnrolledCourses(enrolledIds);
+      } catch (err) {
+        console.error('Error fetching enrolled courses:', err);
+      }
+    };
+
     fetchCourses();
-  }, []);
+    fetchEnrolledCourses();
+  }, [currentUser]);
 
   const handlePurchase = async (courseId: string, price: number) => {
     if (!currentUser) {
@@ -119,9 +139,9 @@ export function Courses() {
 
       const data = await verifyResponse.json();
       if (data.status === 'success') {
-        // Show success message and refresh course list
+        // Add course to enrolled courses
+        setEnrolledCourses(prev => [...prev, data.courseId]);
         setError('');
-        // You might want to show a success message to the user
       } else {
         setError('Payment verification failed');
       }
@@ -129,6 +149,10 @@ export function Courses() {
       console.error('Verification error:', err);
       setError('Failed to verify payment');
     }
+  };
+
+  const handleStartCourse = (courseId: string) => {
+    navigate(`/courses/${courseId}`);
   };
 
   const filteredCourses = selectedCategory === 'all' 
@@ -207,14 +231,24 @@ export function Courses() {
                         <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs">
                           {course.category} - {course.level}
                         </span>
-                        <button
-                          onClick={() => handlePurchase(course.id, course.price)}
-                          disabled={loading}
-                          className="flex items-center space-x-1 bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition-colors text-sm"
-                        >
-                          <span>Enroll</span>
-                          <ArrowRight className="h-4 w-4" />
-                        </button>
+                        {enrolledCourses.includes(course.id) ? (
+                          <button
+                            onClick={() => handleStartCourse(course.id)}
+                            className="flex items-center space-x-1 bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600 transition-colors text-sm"
+                          >
+                            <Play className="h-4 w-4" />
+                            <span>Start</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handlePurchase(course.id, course.price)}
+                            disabled={loading}
+                            className="flex items-center space-x-1 bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                          >
+                            <span>Enroll</span>
+                            <ArrowRight className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
