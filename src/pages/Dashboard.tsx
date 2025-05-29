@@ -164,11 +164,29 @@ export function Dashboard() {
 
   const handleVerifyStudent = async (studentId: string) => {
     try {
+      console.log('Starting student verification for:', studentId);
+      
+      // First, get the current student document
+      const studentDoc = await getDoc(doc(db, 'students', studentId));
+      if (!studentDoc.exists()) {
+        console.error('Student document not found:', studentId);
+        setError('Student not found');
+        return;
+      }
+
+      const studentData = studentDoc.data();
+      console.log('Current student data:', studentData);
+
+      // Update the student document
+      console.log('Updating student status to verified...');
       await updateDoc(doc(db, 'students', studentId), {
         status: 'verified',
         updatedAt: new Date()
       });
 
+      console.log('Student document updated successfully');
+
+      // Update local state
       setStudents(students.map(student => 
         student.id === studentId 
           ? { ...student, status: 'verified' }
@@ -176,6 +194,7 @@ export function Dashboard() {
       ));
 
       // Create notification for student
+      console.log('Creating notification for student...');
       await addDoc(collection(db, 'notifications'), {
         type: 'verification_status',
         studentId,
@@ -183,19 +202,44 @@ export function Dashboard() {
         message: 'Your student verification has been approved. You can now use your API key for payments.',
         createdAt: new Date()
       });
+
+      console.log('Notification created successfully');
+      setError(''); // Clear any previous errors
     } catch (err) {
-      console.error('Error verifying student:', err);
-      setError('Failed to verify student');
+      console.error('Detailed error in handleVerifyStudent:', err);
+      if (err instanceof Error) {
+        setError(`Failed to verify student: ${err.message}`);
+      } else {
+        setError('Failed to verify student');
+      }
     }
   };
 
   const handleRejectStudent = async (studentId: string) => {
     try {
+      console.log('Starting student rejection for:', studentId);
+      
+      // First, get the current student document
+      const studentDoc = await getDoc(doc(db, 'students', studentId));
+      if (!studentDoc.exists()) {
+        console.error('Student document not found:', studentId);
+        setError('Student not found');
+        return;
+      }
+
+      const studentData = studentDoc.data();
+      console.log('Current student data:', studentData);
+
+      // Update the student document
+      console.log('Updating student status to rejected...');
       await updateDoc(doc(db, 'students', studentId), {
         status: 'rejected',
         updatedAt: new Date()
       });
 
+      console.log('Student document updated successfully');
+
+      // Update local state
       setStudents(students.map(student => 
         student.id === studentId 
           ? { ...student, status: 'rejected' }
@@ -203,6 +247,7 @@ export function Dashboard() {
       ));
 
       // Create notification for student
+      console.log('Creating notification for student...');
       await addDoc(collection(db, 'notifications'), {
         type: 'verification_status',
         studentId,
@@ -210,9 +255,16 @@ export function Dashboard() {
         message: 'Your student verification has been rejected. Please contact support for more information.',
         createdAt: new Date()
       });
+
+      console.log('Notification created successfully');
+      setError(''); // Clear any previous errors
     } catch (err) {
-      console.error('Error rejecting student:', err);
-      setError('Failed to reject student');
+      console.error('Detailed error in handleRejectStudent:', err);
+      if (err instanceof Error) {
+        setError(`Failed to reject student: ${err.message}`);
+      } else {
+        setError('Failed to reject student');
+      }
     }
   };
 

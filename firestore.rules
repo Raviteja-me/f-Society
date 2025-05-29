@@ -39,6 +39,7 @@ service cloud.firestore {
         request.auth.uid == resource.data.userId || 
         isAdmin()
       );
+      allow delete: if isAdmin();
     }
 
     match /payment_requests/{requestId} {
@@ -47,6 +48,21 @@ service cloud.firestore {
         isAdmin()
       );
       allow create: if isAuthenticated() && request.auth.uid == request.resource.data.studentId;
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.studentId ||
+        isAdmin()
+      );
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.studentId ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && (
+        request.auth.uid == request.resource.data.studentId ||
+        isAdmin()
+      );
       allow update: if isAuthenticated() && (
         request.auth.uid == resource.data.studentId ||
         isAdmin()
