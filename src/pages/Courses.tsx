@@ -1,129 +1,36 @@
-import { useState } from 'react';
-
-
+import { useState, useEffect } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
-import { CheckCircle,  ArrowRight } from 'lucide-react';
-
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  originalPrice?: number;
-  features: string[];
-  category: 'web' | 'mobile' | 'mind';
-  level: 'frontend' | 'fullstack';
-  image: string;
-}
-
-const courses: Course[] = [
-  {
-    id: 'web-frontend',
-    title: 'AI Web Development - Frontend',
-    description: 'Learn to build professional websites without coding. Master design, animations, and deployment.',
-    price: 499,
-    originalPrice: 999,
-    category: 'web',
-    level: 'frontend',
-    image: '/courses/web-frontend.jpg',
-    features: [
-      'Build websites from scratch',
-      'Add designs and animations',
-      'Make websites reactive and professional',
-      'Deploy and host projects',
-      'Set up CI/CD pipelines',
-      'Edit existing projects',
-      'Import and modify code',
-      'No coding required'
-    ]
-  },
-  {
-    id: 'web-fullstack',
-    title: 'AI Web Development - Full Stack',
-    description: 'Master full-stack development with authentication, databases, and APIs - all without coding.',
-    price: 999,
-    originalPrice: 1999,
-    category: 'web',
-    level: 'fullstack',
-    image: '/courses/web-fullstack.jpg',
-    features: [
-      'Everything from Frontend course',
-      'Authentication systems',
-      'Database integration',
-      'API development',
-      'Backend services',
-      'Full-stack deployment',
-      'Real-time features',
-      'No coding required'
-    ]
-  },
-  {
-    id: 'mobile-frontend',
-    title: 'AI Mobile Development - Frontend',
-    description: 'Create stunning mobile apps with beautiful UI/UX - no coding required.',
-    price: 799,
-    originalPrice: 1599,
-    category: 'mobile',
-    level: 'frontend',
-    image: '/courses/mobile-frontend.jpg',
-    features: [
-      'Build mobile apps from scratch',
-      'Design beautiful interfaces',
-      'Add animations and transitions',
-      'Create responsive layouts',
-      'Implement navigation',
-      'Add user interactions',
-      'Deploy to app stores',
-      'No coding required'
-    ]
-  },
-  {
-    id: 'mobile-fullstack',
-    title: 'AI Mobile Development - Full Stack',
-    description: 'Master full-stack mobile development with backend integration and APIs.',
-    price: 1499,
-    originalPrice: 2999,
-    category: 'mobile',
-    level: 'fullstack',
-    image: '/courses/mobile-fullstack.jpg',
-    features: [
-      'Everything from Frontend course',
-      'Backend integration',
-      'API development',
-      'Database management',
-      'User authentication',
-      'Push notifications',
-      'Cloud services',
-      'No coding required'
-    ]
-  },
-  {
-    id: 'mind-training',
-    title: 'Mind Training Course',
-    description: 'Overcome life challenges, build confidence, and achieve your goals.',
-    price: 499,
-    originalPrice: 999,
-    category: 'mind',
-    level: 'frontend',
-    image: '/courses/mind-training.jpg',
-    features: [
-      'Overcome life challenges',
-      'Build self-confidence',
-      'Set and achieve goals',
-      'Develop positive mindset',
-      'Handle stress effectively',
-      'Improve productivity',
-      'Enhance relationships',
-      'Transform your life'
-    ]
-  }
-];
+import { CheckCircle, ArrowRight } from 'lucide-react';
+import { Course } from '../components/dashboard/types';
 
 export function Courses() {
   const { currentUser } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'web' | 'mobile' | 'mind'>('all');
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const coursesSnapshot = await getDocs(collection(db, 'courses'));
+        const coursesData = coursesSnapshot.docs.map((doc: any) => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Course[];
+        setCourses(coursesData);
+      } catch (err) {
+        console.error('Error fetching courses:', err);
+        setError('Failed to load courses');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   const handlePurchase = async (courseId: string, price: number) => {
     if (!currentUser) {
@@ -135,7 +42,6 @@ export function Courses() {
     setError('');
 
     try {
-      // Create payment request using Cloud Function
       const response = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/purchaseCourse', {
         method: 'POST',
         headers: {
@@ -154,7 +60,6 @@ export function Courses() {
         throw new Error(data.error || 'Failed to create payment');
       }
 
-      // Redirect to payment page
       window.location.href = data.paymentUrl;
     } catch (err) {
       console.error('Payment error:', err);
@@ -168,7 +73,6 @@ export function Courses() {
     ? courses 
     : courses.filter(course => course.category === selectedCategory);
 
-  // Add loading state UI
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -180,109 +84,78 @@ export function Courses() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="sticky top-0 z-10 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold dark:text-white">Courses</h1>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setSelectedCategory('all')}
-                className={`px-4 py-2 rounded-lg ${
-                  selectedCategory === 'all'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setSelectedCategory('web')}
-                className={`px-4 py-2 rounded-lg ${
-                  selectedCategory === 'web'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                Web Development
-              </button>
-              <button
-                onClick={() => setSelectedCategory('mobile')}
-                className={`px-4 py-2 rounded-lg ${
-                  selectedCategory === 'mobile'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                Mobile Development
-              </button>
-              <button
-                onClick={() => setSelectedCategory('mind')}
-                className={`px-4 py-2 rounded-lg ${
-                  selectedCategory === 'mind'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                Mind Training
-              </button>
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="flex justify-between items-center py-3">
+            <h1 className="text-xl font-bold dark:text-white">Courses</h1>
+            <div className="flex space-x-1">
+              {(['all', 'web', 'mobile', 'mind'] as const).map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-3 py-1 text-sm rounded-full ${
+                    selectedCategory === category
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  {category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1)}
+                </button>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-2xl mx-auto px-4 py-6">
         {error && (
-          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="space-y-4">
           {filteredCourses.map(course => (
             <div
               key={course.id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
             >
-              <div className="relative h-48">
-                <img
-                  src={course.image}
-                  alt={course.title}
-                  className="w-full h-full object-cover"
-                />
-                {course.originalPrice && (
-                  <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full">
-                    {Math.round((1 - course.price / course.originalPrice) * 100)}% OFF
-                  </div>
-                )}
-              </div>
-
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-2 dark:text-white">{course.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">{course.description}</p>
-
-                <div className="space-y-2 mb-6">
-                  {course.features.map((feature, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <CheckCircle className="h-5 w-5 text-green-500" />
-                      <span className="text-gray-700 dark:text-gray-300">{feature}</span>
+              <div className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold mb-1 dark:text-white">{course.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{course.description}</p>
+                    
+                    <div className="space-y-1 mb-3">
+                      {course.features.map((feature, index) => (
+                        <div key={index} className="flex items-center space-x-2">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{feature}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-2xl font-bold text-blue-500">₹{course.price}</span>
-                    {course.originalPrice && (
-                      <span className="ml-2 text-gray-500 line-through">₹{course.originalPrice}</span>
-                    )}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-lg font-bold text-blue-500">₹{course.price}</span>
+                        {course.originalPrice && (
+                          <span className="ml-2 text-sm text-gray-500 line-through">₹{course.originalPrice}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs">
+                          {course.category} - {course.level}
+                        </span>
+                        <button
+                          onClick={() => handlePurchase(course.id, course.price)}
+                          disabled={loading}
+                          className="flex items-center space-x-1 bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                        >
+                          <span>Enroll</span>
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => handlePurchase(course.id, course.price)}
-                    disabled={loading}
-                    className="flex items-center space-x-2 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                  >
-                    <span>Enroll Now</span>
-                    <ArrowRight className="h-5 w-5" />
-                  </button>
                 </div>
               </div>
             </div>
