@@ -230,11 +230,14 @@ export function Dashboard() {
       // Create notification for student
       console.log('Creating notification for student...');
       await addDoc(collection(db, 'notifications'), {
+        userId: studentData.userId, // Make sure this matches your student document structure
         type: 'verification_status',
-        studentId,
-        status: 'verified',
+        title: 'Student Verification Approved',
         message: 'Your student verification has been approved. You can now use your API key for payments.',
-        createdAt: new Date()
+        status: 'verified',
+        read: false,
+        createdAt: new Date(),
+        link: '/dashboard' // Optional: link to relevant page
       });
 
       console.log('Notification created successfully');
@@ -283,11 +286,14 @@ export function Dashboard() {
       // Create notification for student
       console.log('Creating notification for student...');
       await addDoc(collection(db, 'notifications'), {
+        userId: studentData.userId, // Make sure this matches your student document structure
         type: 'verification_status',
-        studentId,
-        status: 'rejected',
+        title: 'Student Verification Rejected',
         message: 'Your student verification has been rejected. Please contact support for more information.',
-        createdAt: new Date()
+        status: 'rejected',
+        read: false,
+        createdAt: new Date(),
+        link: '/support' // Optional: link to support page
       });
 
       console.log('Notification created successfully');

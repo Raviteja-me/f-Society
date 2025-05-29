@@ -9,6 +9,11 @@ service cloud.firestore {
       return isAuthenticated() && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
+
+    function hasPurchasedCourse(courseId) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/purchases/$(request.auth.uid + '_' + courseId));
+    }
     
     match /posts/{postId} {
       allow read: if true;
@@ -56,17 +61,50 @@ service cloud.firestore {
 
     match /notifications/{notificationId} {
       allow read: if isAuthenticated() && (
-        request.auth.uid == resource.data.studentId ||
+        request.auth.uid == resource.data.userId ||
         isAdmin()
       );
       allow create: if isAuthenticated() && (
-        request.auth.uid == request.resource.data.studentId ||
+        request.auth.uid == request.resource.data.userId ||
         isAdmin()
       );
       allow update: if isAuthenticated() && (
-        request.auth.uid == resource.data.studentId ||
+        request.auth.uid == resource.data.userId ||
         isAdmin()
       );
+    }
+
+    match /community_posts/{postId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        // Allow updating comments
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments', 'stats']) ||
+        // Allow updating likes
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'stats']) ||
+        // Allow updating share count
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats'])
+      );
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.authorId;
+    }
+
+    match /courses/{courseId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /courses/{courseId}/content/{contentId} {
+      allow read: if hasPurchasedCourse(courseId) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /purchases/{purchaseId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      allow update: if isAdmin();
     }
   }
 }
