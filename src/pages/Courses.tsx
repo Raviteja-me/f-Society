@@ -41,7 +41,7 @@ export function Courses() {
           where('studentId', '==', currentUser.uid)
         );
         const enrollmentsSnapshot = await getDocs(enrollmentsQuery);
-        const enrolledIds = enrollmentsSnapshot.docs.map((doc: { data: () => { courseId: string } }) => doc.data().courseId);
+        const enrolledIds = enrollmentsSnapshot.docs.map((doc: any) => doc.data().courseId);
         setEnrolledCourses(enrolledIds);
       } catch (err) {
         console.error('Error fetching enrolled courses:', err);
@@ -51,6 +51,19 @@ export function Courses() {
     fetchCourses();
     fetchEnrolledCourses();
   }, [currentUser]);
+
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const existingScript = document.querySelector(`script[src="https://checkout.razorpay.com/v1/checkout.js"]`);
+      if (existingScript) return resolve(true);
+
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
 
   const handlePurchase = async (courseId: string) => {
     if (!currentUser) {
@@ -62,30 +75,25 @@ export function Courses() {
     setError('');
 
     try {
-      // Get course details first
-      const courseDoc = await getDoc(doc(db, 'courses', courseId));
-      if (!courseDoc.exists()) {
-        throw new Error('Course not found');
-      }
+      const isScriptLoaded = await loadRazorpayScript();
+      if (!isScriptLoaded) throw new Error('Failed to load Razorpay script');
 
+      const courseDoc = await getDoc(doc(db, 'courses', courseId));
+      if (!courseDoc.exists()) throw new Error('Course not found');
       const courseData = courseDoc.data();
 
-      // Get the token from Firebase config
       const configDoc = await getDoc(doc(db, 'config', 'api'));
-      if (!configDoc.exists()) {
-        throw new Error('API configuration not found');
-      }
+      if (!configDoc.exists()) throw new Error('API configuration not found');
       const token = configDoc.data().token;
 
-      // Make the payment request to generatePaymentLink
       const response = await fetch('https://us-central1-lazy-job-seeker-4b29b.cloudfunctions.net/generatePaymentLink', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          amount: courseData.price * 100, // Convert to paise for Razorpay
+          amount: courseData.price * 100,
           currency: 'INR',
           planId: courseId,
           planName: courseData.title,
@@ -94,29 +102,22 @@ export function Courses() {
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to create payment');
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create payment');
-      }
-
-      // Initialize Razorpay
       const options = {
         key: data.razorpayKey,
         amount: data.amount,
         currency: data.currency,
-        name: "f-Society",
+        name: 'f-Society',
         description: courseData.title,
         order_id: data.orderId,
-        handler: function (response: any) {
-          // Handle successful payment
-          verifyPayment(response, courseId);
-        },
+        handler: (response: any) => verifyPayment(response, courseId),
         prefill: {
           name: currentUser.displayName || '',
           email: currentUser.email || ''
         },
         theme: {
-          color: "#2563EB"
+          color: '#2563EB'
         }
       };
 
@@ -124,7 +125,7 @@ export function Courses() {
       razorpay.open();
     } catch (err) {
       console.error('Payment error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to process payment. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to process payment');
     } finally {
       setLoading(false);
     }
@@ -132,18 +133,15 @@ export function Courses() {
 
   const verifyPayment = async (response: any, courseId: string) => {
     try {
-      // Get the token from Firebase config
       const configDoc = await getDoc(doc(db, 'config', 'api'));
-      if (!configDoc.exists()) {
-        throw new Error('API configuration not found');
-      }
+      if (!configDoc.exists()) throw new Error('API configuration not found');
       const token = configDoc.data().token;
 
       const verifyResponse = await fetch('https://us-central1-lazy-job-seeker-4b29b.cloudfunctions.net/verifyPaymentStatus', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
           orderId: response.razorpay_order_id,
@@ -154,8 +152,7 @@ export function Courses() {
 
       const data = await verifyResponse.json();
       if (data.status === 'success') {
-        // Add course to enrolled courses
-        setEnrolledCourses(prev => [...prev, courseId]);
+        setEnrolledCourses((prev) => [...prev, courseId]);
         setError('');
       } else {
         setError('Payment verification failed');
@@ -170,9 +167,8 @@ export function Courses() {
     navigate(`/courses/${courseId}`);
   };
 
-  const filteredCourses = selectedCategory === 'all' 
-    ? courses 
-    : courses.filter(course => course.category === selectedCategory);
+  const filteredCourses =
+    selectedCategory === 'all' ? courses : courses.filter((course) => course.category === selectedCategory);
 
   if (loading) {
     return (
@@ -209,13 +205,11 @@ export function Courses() {
 
       <div className="max-w-2xl mx-auto px-4 py-6">
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-            {error}
-          </div>
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">{error}</div>
         )}
 
         <div className="space-y-4">
-          {filteredCourses.map(course => (
+          {filteredCourses.map((course) => (
             <div
               key={course.id}
               className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
@@ -225,7 +219,7 @@ export function Courses() {
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold mb-1 dark:text-white">{course.title}</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{course.description}</p>
-                    
+
                     <div className="space-y-1 mb-3">
                       {course.features.map((feature, index) => (
                         <div key={index} className="flex items-center space-x-2">
@@ -275,4 +269,4 @@ export function Courses() {
       </div>
     </div>
   );
-} 
+}
