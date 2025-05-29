@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, query, where, getDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { CheckCircle, ArrowRight, Play } from 'lucide-react';
@@ -94,7 +94,7 @@ export function Courses() {
         studentId: currentUser.uid
       });
 
-      const response = await fetch('https://us-central1-lazy-job-seeker-4b29b.cloudfunctions.net/generatePaymentLink', {
+      const response = await fetch('https://lazyjobseeker.com/generatePaymentLink', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,6 +118,20 @@ export function Courses() {
 
       if (!data.paymentUrl) {
         throw new Error('No payment URL received');
+      }
+
+      try {
+        await setDoc(doc(db, 'payment_requests', data.orderId), {
+          studentId: currentUser.uid,
+          courseId,
+          amount: courseData.price * 100,
+          currency: 'INR',
+          status: 'pending',
+          orderId: data.orderId,
+          createdAt: serverTimestamp()
+        });
+      } catch (firestoreError) {
+        console.error('Error storing payment request:', firestoreError);
       }
 
       window.open(data.paymentUrl, '_blank');
