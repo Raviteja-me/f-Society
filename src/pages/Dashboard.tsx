@@ -163,7 +163,7 @@ export function Dashboard() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
+    <div className="flex-1 flex flex-col p-4">
       <h1 className="text-2xl font-bold mb-6 dark:text-white">Admin Dashboard</h1>
 
       {error && (

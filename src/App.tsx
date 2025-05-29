@@ -1,4 +1,3 @@
-
 import { Routes, Route } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { Home } from './pages/Home';
@@ -15,7 +14,7 @@ import { Widgets } from './components/Widgets';
 
 function App() {
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
+    <div className="min-h-screen bg-white dark:bg-black flex">
       {/* Mobile Header and Drawer */}
       <div className="md:hidden fixed top-0 left-0 w-full z-50">
         <Sidebar />
@@ -44,15 +43,15 @@ function App() {
       </div>
 
       {/* Desktop Layout - Only visible on md and up */}
-      <div className="hidden md:flex justify-center w-full">
-        <div className="flex max-w-6xl mx-auto">
+      <div className="hidden md:flex justify-center w-full flex-1">
+        <div className="flex max-w-6xl mx-auto flex-1">
           {/* Sidebar (not fixed) */}
           <div className="hidden md:block md:w-[275px] bg-white dark:bg-black">
             <Sidebar />
           </div>
 
           {/* Main Content - Centered Feed */}
-          <div className="flex-1 max-w-[600px] border-x border-gray-200 dark:border-gray-800 min-h-screen">
+          <div className="flex-1 max-w-[600px] w-full border-x border-gray-200 dark:border-gray-800 flex flex-col min-h-screen">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/explore" element={<Explore />} />
