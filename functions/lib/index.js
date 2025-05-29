@@ -45,7 +45,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateApiToken = exports.verifyCoursePurchase = exports.purchaseCourse = exports.verifyPaymentStatus = exports.createPaymentRequest = exports.registerStudent = exports.getApiToken = void 0;
+exports.generatePaymentLink = exports.updateApiToken = exports.verifyCoursePurchase = exports.purchaseCourse = exports.verifyPaymentStatus = exports.createPaymentRequest = exports.registerStudent = exports.getApiToken = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const crypto = __importStar(require("crypto"));
@@ -445,5 +445,74 @@ exports.updateApiToken = (0, https_1.onRequest)({ cors: true }, (req, res) => __
     catch (error) {
         console.error('Error updating API token:', error);
         res.status(500).json({ error: 'Failed to update API token' });
+    }
+}));
+// Generate Payment Link
+exports.generatePaymentLink = (0, https_1.onRequest)({ cors: true }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
+        return;
+    }
+    try {
+        // Log the incoming request
+        console.log('Received payment link request:', {
+            headers: req.headers,
+            body: req.body
+        });
+        const { amount, currency, planId, planName, studentId } = req.body;
+        // Validate required fields
+        if (!amount || !currency || !planId || !planName || !studentId) {
+            console.error('Missing required fields:', { amount, currency, planId, planName, studentId });
+            res.status(400).json({ error: 'Missing required fields' });
+            return;
+        }
+        // Get token from config
+        const token = process.env.FSOCIETY_TOKEN;
+        if (!token) {
+            console.error('FSOCIETY_TOKEN not configured');
+            res.status(500).json({ error: 'Server configuration error' });
+            return;
+        }
+        // Call lazyjobseeker.com to generate payment
+        const response = yield (0, node_fetch_1.default)('https://lazyjobseeker.com/generatePaymentLink', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                amount,
+                currency,
+                planId,
+                planName,
+                studentId
+            })
+        });
+        // Log the response
+        console.log('Payment link response status:', response.status);
+        const data = yield response.json();
+        console.log('Payment link response data:', data);
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to generate payment link');
+        }
+        // Store payment request
+        yield db.collection('payment_requests').doc(data.orderId).set({
+            studentId,
+            planId,
+            planName,
+            amount,
+            orderId: data.orderId,
+            status: 'pending',
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        // Return the exact response from lazyjobseeker.com
+        res.json(data);
+    }
+    catch (error) {
+        console.error('Error generating payment link:', error);
+        res.status(500).json({
+            error: 'Failed to generate payment link',
+            details: error instanceof Error ? error.message : 'Unknown error'
+        });
     }
 }));

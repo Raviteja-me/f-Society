@@ -465,4 +465,82 @@ export const updateApiToken = onRequest({ cors: true }, async (req, res) => {
     console.error('Error updating API token:', error);
     res.status(500).json({ error: 'Failed to update API token' });
   }
+});
+
+// Generate Payment Link
+export const generatePaymentLink = onRequest({ cors: true }, async (req: Request, res: Response) => {
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
+
+  try {
+    // Log the incoming request
+    console.log('Received payment link request:', {
+      headers: req.headers,
+      body: req.body
+    });
+
+    const { amount, currency, planId, planName, studentId } = req.body;
+
+    // Validate required fields
+    if (!amount || !currency || !planId || !planName || !studentId) {
+      console.error('Missing required fields:', { amount, currency, planId, planName, studentId });
+      res.status(400).json({ error: 'Missing required fields' });
+      return;
+    }
+
+    // Get token from config
+    const token = process.env.FSOCIETY_TOKEN;
+    if (!token) {
+      console.error('FSOCIETY_TOKEN not configured');
+      res.status(500).json({ error: 'Server configuration error' });
+      return;
+    }
+
+    // Call lazyjobseeker.com to generate payment
+    const response = await fetch('https://lazyjobseeker.com/generatePaymentLink', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        amount,
+        currency,
+        planId,
+        planName,
+        studentId
+      })
+    });
+
+    // Log the response
+    console.log('Payment link response status:', response.status);
+    const data = await response.json();
+    console.log('Payment link response data:', data);
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to generate payment link');
+    }
+
+    // Store payment request
+    await db.collection('payment_requests').doc(data.orderId).set({
+      studentId,
+      planId,
+      planName,
+      amount,
+      orderId: data.orderId,
+      status: 'pending',
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Return the exact response from lazyjobseeker.com
+    res.json(data);
+  } catch (error) {
+    console.error('Error generating payment link:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate payment link',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
 }); 

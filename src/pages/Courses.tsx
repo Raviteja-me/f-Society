@@ -86,11 +86,19 @@ export function Courses() {
       if (!configDoc.exists()) throw new Error('API configuration not found');
       const token = configDoc.data().token;
 
+      console.log('Sending payment request with:', {
+        amount: courseData.price * 100,
+        currency: 'INR',
+        planId: courseId,
+        planName: courseData.title,
+        studentId: currentUser.uid
+      });
+
       const response = await fetch('https://us-central1-lazy-job-seeker-4b29b.cloudfunctions.net/generatePaymentLink', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           amount: courseData.price * 100,
@@ -102,10 +110,20 @@ export function Courses() {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to create payment');
+      console.log('Payment response:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error || data.details || 'Failed to create payment');
+      }
+
+      if (!data.paymentUrl) {
+        throw new Error('No payment URL received');
+      }
+
+      window.open(data.paymentUrl, '_blank');
 
       const options = {
-        key: data.razorpayKey,
+        key: data.razorpayKey || 'rzp_live_F12exZqFCX1b4l',
         amount: data.amount,
         currency: data.currency,
         name: 'f-Society',
