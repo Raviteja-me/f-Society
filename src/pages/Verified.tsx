@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { doc, getDoc, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase.ts';
-import { Copy, CheckCircle, AlertCircle, Shield, CreditCard, Upload, Banknote, FileText } from 'lucide-react';
+import { Copy, CheckCircle, AlertCircle, Shield, CreditCard, Banknote } from 'lucide-react';
 
 interface StudentData {
   id: string;
@@ -34,7 +34,6 @@ export function Verified() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
   const [formData, setFormData] = useState({
     pan: '',
     upi: '',
@@ -98,7 +97,7 @@ export function Verified() {
     const uploadTask = uploadBytes(storageRef, file);
     
     return new Promise((resolve, reject) => {
-      uploadTask.then(async (snapshot) => {
+      uploadTask.then(async (snapshot: any) => {
         const downloadURL = await getDownloadURL(snapshot.ref);
         resolve(downloadURL);
       }).catch(reject);

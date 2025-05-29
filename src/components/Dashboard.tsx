@@ -4,7 +4,7 @@ import { collection, addDoc, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase.ts';
 import { useAuth } from '../context/AuthContext';
-import { Upload, X, FileText, Video, Image as ImageIcon } from 'lucide-react';
+import { X, FileText, Video, Image as ImageIcon } from 'lucide-react';
 
 interface MediaFile {
   file: File;
@@ -34,7 +34,7 @@ export function Dashboard() {
 
   const fetchUsers = async () => {
     const usersSnapshot = await getDocs(collection(db, 'users'));
-    const usersData = usersSnapshot.docs.map(doc => ({
+    const usersData = usersSnapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data()
     })) as User[];

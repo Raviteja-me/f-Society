@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
 import { db } from '../firebase.ts';
-import { CheckCircle, XCircle, Clock, DollarSign, UserCheck, Eye } from 'lucide-react';
+import { CheckCircle, XCircle, Eye } from 'lucide-react';
 
 interface Student {
   id: string;
@@ -50,7 +50,7 @@ export function Dashboard() {
       try {
         // Fetch students
         const studentsSnapshot = await getDocs(collection(db, 'students'));
-        const studentsData: Student[] = studentsSnapshot.docs.map(doc => {
+        const studentsData: Student[] = studentsSnapshot.docs.map((doc: any) => {
           const data = doc.data();
           return {
             id: doc.id,
@@ -68,7 +68,7 @@ export function Dashboard() {
 
         // Fetch payment requests
         const paymentsSnapshot = await getDocs(collection(db, 'payment_requests'));
-        const paymentsData: PaymentRequest[] = paymentsSnapshot.docs.map(doc => {
+        const paymentsData: PaymentRequest[] = paymentsSnapshot.docs.map((doc: any) => {
           const data = doc.data();
           return {
             id: doc.id,

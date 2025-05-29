@@ -1,5 +1,3 @@
-import React from 'react';
-
 export function Courses() {
   return (
     <div className="min-h-screen">

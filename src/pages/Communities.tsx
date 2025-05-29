@@ -1,5 +1,3 @@
-import React from 'react';
-
 export function Communities() {
   return (
     <div className="min-h-screen">

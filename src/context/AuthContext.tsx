@@ -1,20 +1,20 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { 
   GoogleAuthProvider, 
   signInWithPopup, 
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  onAuthStateChanged,
-  User 
+  onAuthStateChanged
 } from 'firebase/auth';
+
 import { auth } from '../firebase.ts';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.ts';
 
 interface AuthContextType {
-  currentUser: User | null;
-  signInWithGoogle: () => Promise<User | null>;
+  currentUser: any;
+  signInWithGoogle: () => Promise<any>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -23,10 +23,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user: any) => {
       setCurrentUser(user);
     });
     return unsubscribe;

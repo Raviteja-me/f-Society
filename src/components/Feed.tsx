@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   collection,
   query,
@@ -8,14 +8,13 @@ import {
   doc,
   arrayUnion,
   arrayRemove,
-  serverTimestamp,
   increment,
   getDoc
 } from 'firebase/firestore';
 import { db } from '../firebase.ts';
-import { MessageCircle, Repeat2, Heart, Share, Send, ThumbsUp } from 'lucide-react';
+import { MessageCircle, Heart, Share, ThumbsUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { FileText, FileImage, FileVideo, FileArchive, FileSpreadsheet } from 'lucide-react';
+import { FileText } from 'lucide-react';
 
 interface Media {
   type: 'image' | 'video' | 'file';
@@ -55,7 +54,6 @@ export function Feed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentText, setCommentText] = useState('');
   const [activeCommentPost, setActiveCommentPost] = useState<string | null>(null);
-  const [isPostingComment, setIsPostingComment] = useState(false);
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -64,8 +62,8 @@ export function Feed() {
         const postsRef = collection(db, 'posts');
         const q = query(postsRef, orderBy('timestamp', 'desc'));
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-          const posts = snapshot.docs.map(doc => ({
+        const unsubscribe = onSnapshot(q, (snapshot: any) => {
+          const posts = snapshot.docs.map((doc: any) => ({
             id: doc.id,
             ...doc.data(),
             likes: doc.data().likes || [],

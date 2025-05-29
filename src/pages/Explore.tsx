@@ -1,5 +1,3 @@
-import React from 'react';
-
 export function Explore() {
   return (
     <div className="min-h-screen">

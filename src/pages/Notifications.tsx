@@ -1,5 +1,3 @@
-import React from 'react';
-
 export function Notifications() {
   return (
     <div className="min-h-screen">
