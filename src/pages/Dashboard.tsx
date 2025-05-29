@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc, addDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.ts';
-import { CheckCircle, XCircle, Eye } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Send, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -38,16 +38,50 @@ interface PaymentRequest {
   verifiedAt?: Date;
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  photoURL: string;
+  isAdmin: boolean;
+  createdAt: Date;
+}
+
+interface Post {
+  id: string;
+  content: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar: string;
+  timestamp: Date;
+  media: Array<{
+    url: string;
+    type: string;
+    filename: string;
+  }>;
+  stats: {
+    likes: number;
+    comments: number;
+    shares: number;
+  };
+}
+
 export function Dashboard() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
   const [paymentRequests, setPaymentRequests] = useState<PaymentRequest[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'students' | 'payments'>('students');
+  const [activeTab, setActiveTab] = useState<'students' | 'payments' | 'users' | 'posts'>('students');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [showDocuments, setShowDocuments] = useState(false);
+  const [showNewPostModal, setShowNewPostModal] = useState(false);
+  const [newPostContent, setNewPostContent] = useState('');
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [notificationMessage, setNotificationMessage] = useState('');
 
   useEffect(() => {
     const verifyAdminAndFetchData = async () => {
@@ -273,6 +307,96 @@ export function Dashboard() {
     setShowDocuments(true);
   };
 
+  const handleCreatePost = async () => {
+    try {
+      if (!currentUser) return;
+      
+      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+      const userData = userDoc.data();
+      
+      const newPost = {
+        content: newPostContent,
+        authorId: currentUser.uid,
+        authorName: userData?.name || 'Admin',
+        authorAvatar: userData?.photoURL || '',
+        timestamp: new Date(),
+        media: [],
+        stats: {
+          likes: 0,
+          comments: 0,
+          shares: 0
+        }
+      };
+
+      await addDoc(collection(db, 'posts'), newPost);
+      setNewPostContent('');
+      setShowNewPostModal(false);
+      // Refresh posts
+      fetchPosts();
+    } catch (err) {
+      console.error('Error creating post:', err);
+      setError('Failed to create post');
+    }
+  };
+
+  const handleSendNotification = async (userId: string) => {
+    try {
+      if (!notificationMessage.trim()) return;
+
+      await addDoc(collection(db, 'notifications'), {
+        userId,
+        message: notificationMessage,
+        type: 'admin_notification',
+        createdAt: new Date(),
+        read: false
+      });
+
+      setNotificationMessage('');
+      setSelectedUser(null);
+    } catch (err) {
+      console.error('Error sending notification:', err);
+      setError('Failed to send notification');
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const usersSnapshot = await getDocs(collection(db, 'users'));
+      const usersData = usersSnapshot.docs.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate() || new Date()
+      })) as User[];
+      setUsers(usersData);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      setError('Failed to fetch users');
+    }
+  };
+
+  const fetchPosts = async () => {
+    try {
+      const postsSnapshot = await getDocs(collection(db, 'posts'));
+      const postsData = postsSnapshot.docs.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data(),
+        timestamp: doc.data().timestamp?.toDate() || new Date()
+      })) as Post[];
+      setPosts(postsData);
+    } catch (err) {
+      console.error('Error fetching posts:', err);
+      setError('Failed to fetch posts');
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'users') {
+      fetchUsers();
+    } else if (activeTab === 'posts') {
+      fetchPosts();
+    }
+  }, [activeTab]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -313,6 +437,26 @@ export function Dashboard() {
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
             >
               Payments
+            </button>
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`${
+                activeTab === 'users'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              Users
+            </button>
+            <button
+              onClick={() => setActiveTab('posts')}
+              className={`${
+                activeTab === 'posts'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              Posts
             </button>
           </nav>
         </div>
@@ -388,7 +532,7 @@ export function Dashboard() {
             </table>
           </div>
         </div>
-      ) : (
+      ) : activeTab === 'payments' ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-semibold mb-4 dark:text-white">Payment History</h2>
           <div className="overflow-x-auto">
@@ -428,63 +572,249 @@ export function Dashboard() {
             </table>
           </div>
         </div>
-      )}
+      ) : activeTab === 'users' ? (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <h2 className="text-xl font-semibold mb-4 dark:text-white">User Management</h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead>
+                <tr className="border-b dark:border-gray-700">
+                  <th className="text-left py-2 dark:text-white">User</th>
+                  <th className="text-left py-2 dark:text-white">Email</th>
+                  <th className="text-left py-2 dark:text-white">Role</th>
+                  <th className="text-left py-2 dark:text-white">Joined</th>
+                  <th className="text-left py-2 dark:text-white">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map(user => (
+                  <tr key={user.id} className="border-b dark:border-gray-700">
+                    <td className="py-2">
+                      <div className="flex items-center space-x-2">
+                        <img
+                          src={user.photoURL}
+                          alt={user.name}
+                          className="w-8 h-8 rounded-full"
+                        />
+                        <span className="dark:text-white">{user.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-2 dark:text-white">{user.email}</td>
+                    <td className="py-2">
+                      <span className={`px-2 py-1 rounded-full text-sm ${
+                        user.isAdmin ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {user.isAdmin ? 'Admin' : 'User'}
+                      </span>
+                    </td>
+                    <td className="py-2 dark:text-white">{user.createdAt.toLocaleDateString()}</td>
+                    <td className="py-2">
+                      <button
+                        onClick={() => setSelectedUser(user)}
+                        className="p-1 text-blue-600 hover:text-blue-800"
+                        title="Send Notification"
+                      >
+                        <Send className="h-5 w-5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : activeTab === 'posts' ? (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold dark:text-white">Posts Management</h2>
+            <button
+              onClick={() => setShowNewPostModal(true)}
+              className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            >
+              <Plus className="h-5 w-5" />
+              <span>New Post</span>
+            </button>
+          </div>
+          <div className="space-y-4">
+            {posts.map(post => (
+              <div key={post.id} className="border dark:border-gray-700 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <img
+                    src={post.authorAvatar}
+                    alt={post.authorName}
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <span className="font-medium dark:text-white">{post.authorName}</span>
+                  <span className="text-gray-500 text-sm">
+                    {post.timestamp.toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="dark:text-white mb-2">{post.content}</p>
+                {post.media && post.media.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2 mb-2">
+                    {post.media.map((media, index) => (
+                      media.type === 'image' ? (
+                        <img
+                          key={index}
+                          src={media.url}
+                          alt={`Media ${index + 1}`}
+                          className="w-full rounded-lg"
+                        />
+                      ) : (
+                        <video
+                          key={index}
+                          src={media.url}
+                          controls
+                          className="w-full rounded-lg"
+                        />
+                      )
+                    ))}
+                  </div>
+                )}
+                <div className="flex items-center space-x-4 text-sm text-gray-500">
+                  <span>❤️ {post.stats.likes}</span>
+                  <span>💬 {post.stats.comments}</span>
+                  <span>🔄 {post.stats.shares}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          {/* Document Preview Modal */}
+          {showDocuments && selectedStudent && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold dark:text-white">Student Documents</h3>
+                  <button
+                    onClick={() => setShowDocuments(false)}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    ✕
+                  </button>
+                </div>
 
-      {/* Document Preview Modal */}
-      {showDocuments && selectedStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold dark:text-white">Student Documents</h3>
-              <button
-                onClick={() => setShowDocuments(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-medium mb-2 dark:text-white">PAN Card</h4>
-                <img
-                  src={selectedStudent.documents.panImage}
-                  alt="PAN Card"
-                  className="w-full rounded-lg"
-                />
-              </div>
-              <div>
-                <h4 className="font-medium mb-2 dark:text-white">Aadhaar Front</h4>
-                <img
-                  src={selectedStudent.documents.aadhaarFront}
-                  alt="Aadhaar Front"
-                  className="w-full rounded-lg"
-                />
-              </div>
-              <div>
-                <h4 className="font-medium mb-2 dark:text-white">Aadhaar Back</h4>
-                <img
-                  src={selectedStudent.documents.aadhaarBack}
-                  alt="Aadhaar Back"
-                  className="w-full rounded-lg"
-                />
-              </div>
-              <div>
-                <h4 className="font-medium mb-2 dark:text-white">Bank Details</h4>
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                  <p className="dark:text-white">
-                    <span className="font-medium">Account Holder:</span> {selectedStudent.bankDetails.accountHolderName}
-                  </p>
-                  <p className="dark:text-white">
-                    <span className="font-medium">Account Number:</span> {selectedStudent.bankDetails.accountNumber}
-                  </p>
-                  <p className="dark:text-white">
-                    <span className="font-medium">IFSC Code:</span> {selectedStudent.bankDetails.ifscCode}
-                  </p>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2 dark:text-white">PAN Card</h4>
+                    <img
+                      src={selectedStudent.documents.panImage}
+                      alt="PAN Card"
+                      className="w-full rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2 dark:text-white">Aadhaar Front</h4>
+                    <img
+                      src={selectedStudent.documents.aadhaarFront}
+                      alt="Aadhaar Front"
+                      className="w-full rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2 dark:text-white">Aadhaar Back</h4>
+                    <img
+                      src={selectedStudent.documents.aadhaarBack}
+                      alt="Aadhaar Back"
+                      className="w-full rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2 dark:text-white">Bank Details</h4>
+                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                      <p className="dark:text-white">
+                        <span className="font-medium">Account Holder:</span> {selectedStudent.bankDetails.accountHolderName}
+                      </p>
+                      <p className="dark:text-white">
+                        <span className="font-medium">Account Number:</span> {selectedStudent.bankDetails.accountNumber}
+                      </p>
+                      <p className="dark:text-white">
+                        <span className="font-medium">IFSC Code:</span> {selectedStudent.bankDetails.ifscCode}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* New Post Modal */}
+          {showNewPostModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold dark:text-white">Create New Post</h3>
+                  <button
+                    onClick={() => setShowNewPostModal(false)}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <textarea
+                  value={newPostContent}
+                  onChange={(e) => setNewPostContent(e.target.value)}
+                  className="w-full h-32 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="Write your post content..."
+                />
+                <div className="mt-4 flex justify-end space-x-2">
+                  <button
+                    onClick={() => setShowNewPostModal(false)}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreatePost}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  >
+                    Post
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Send Notification Modal */}
+          {selectedUser && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold dark:text-white">
+                    Send Notification to {selectedUser.name}
+                  </h3>
+                  <button
+                    onClick={() => setSelectedUser(null)}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <textarea
+                  value={notificationMessage}
+                  onChange={(e) => setNotificationMessage(e.target.value)}
+                  className="w-full h-32 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="Write your notification message..."
+                />
+                <div className="mt-4 flex justify-end space-x-2">
+                  <button
+                    onClick={() => setSelectedUser(null)}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleSendNotification(selectedUser.id)}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
