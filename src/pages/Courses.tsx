@@ -42,15 +42,23 @@ export function Courses() {
     setError('');
 
     try {
-      const response = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/purchaseCourse', {
+      // First, get the API token
+      const tokenResponse = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/getApiToken');
+      const { token } = await tokenResponse.json();
+
+      // Then make the payment request with the token
+      const response = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/generatePaymentLink', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          userId: currentUser.uid,
-          courseId,
-          price
+          amount: price * 100, // Convert to paise
+          currency: 'INR',
+          planId: courseId,
+          planName: courses.find(c => c.id === courseId)?.title || 'Course Purchase',
+          studentId: currentUser.uid
         })
       });
 
@@ -60,12 +68,66 @@ export function Courses() {
         throw new Error(data.error || 'Failed to create payment');
       }
 
-      window.location.href = data.paymentUrl;
+      // Initialize Razorpay
+      const options = {
+        key: data.razorpayKey,
+        amount: data.amount,
+        currency: data.currency,
+        name: "f-Society",
+        description: "Course Purchase",
+        order_id: data.orderId,
+        handler: function (response: any) {
+          // Handle successful payment
+          verifyPayment(response);
+        },
+        prefill: {
+          name: currentUser.displayName || '',
+          email: currentUser.email || ''
+        },
+        theme: {
+          color: "#2563EB"
+        }
+      };
+
+      const razorpay = new (window as any).Razorpay(options);
+      razorpay.open();
     } catch (err) {
       console.error('Payment error:', err);
       setError(err instanceof Error ? err.message : 'Failed to process payment. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const verifyPayment = async (response: any) => {
+    try {
+      const tokenResponse = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/getApiToken');
+      const { token } = await tokenResponse.json();
+
+      const verifyResponse = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/verifyPaymentStatus', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          orderId: response.razorpay_order_id,
+          paymentId: response.razorpay_payment_id,
+          signature: response.razorpay_signature
+        })
+      });
+
+      const data = await verifyResponse.json();
+      if (data.status === 'success') {
+        // Show success message and refresh course list
+        setError('');
+        // You might want to show a success message to the user
+      } else {
+        setError('Payment verification failed');
+      }
+    } catch (err) {
+      console.error('Verification error:', err);
+      setError('Failed to verify payment');
     }
   };
 
