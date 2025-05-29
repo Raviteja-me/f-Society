@@ -79,9 +79,6 @@ export function Courses() {
         studentId: shortStudentId
       };
 
-      // Log the request body
-      console.log('Request Body:', requestBody);
-
       // Generate payment link
       const response = await fetch(import.meta.env.VITE_PAYMENT_ENDPOINT, {
         method: 'POST',
@@ -99,45 +96,48 @@ export function Courses() {
         throw new Error(data.error || 'Failed to generate payment link');
       }
 
-      // Load Razorpay script
+      // Initialize Razorpay with secure options
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY,
+        amount: data.amount,
+        currency: data.currency,
+        name: 'FSociety',
+        description: courseData.title,
+        order_id: data.orderId,
+        handler: function (response: any) {
+          console.log('Payment successful:', response);
+          verifyPayment(response.razorpay_payment_id, courseId);
+        },
+        prefill: {
+          name: currentUser.displayName || '',
+          email: currentUser.email || '',
+        },
+        notes: {
+          planId: courseId,
+          studentId: currentUser.uid
+        },
+        theme: {
+          color: '#2563eb'
+        },
+        modal: {
+          ondismiss: function() {
+            console.log('Payment modal closed');
+          }
+        }
+      };
+
+      // Load Razorpay script dynamically
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.async = true;
-      document.body.appendChild(script);
-
       script.onload = () => {
-        const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY,
-          amount: data.amount,
-          currency: data.currency,
-          name: 'FSociety',
-          description: courseData.title,
-          order_id: data.orderId,
-          handler: function (response: any) {
-            console.log('Payment successful:', response);
-            // Handle successful payment
-            verifyPayment(response.razorpay_payment_id, courseId);
-          },
-          prefill: {
-            name: currentUser.displayName || '',
-            email: currentUser.email || '',
-          },
-          notes: {
-            planId: courseId,
-            studentId: currentUser.uid
-          },
-          theme: {
-            color: '#2563eb'
-          }
-        };
-
         const rzp = new (window as any).Razorpay(options);
         rzp.open();
       };
-
       script.onerror = () => {
         throw new Error('Failed to load Razorpay script');
       };
+      document.body.appendChild(script);
 
     } catch (err) {
       console.error('Payment error:', err);
