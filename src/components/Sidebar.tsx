@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Bell, BookOpen, Users, Key, User, LogOut, Menu, X } from 'lucide-react';
+import { Home, Bell, BookOpen, Users, Key, User, LogOut, Menu, X, LayoutDashboard } from 'lucide-react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { Link } from './Link';
 import { ThemeToggle } from './ThemeToggle';
@@ -24,6 +24,11 @@ export function Sidebar() {
     { icon: User, text: 'Profile', path: '/profile' }
   ];
 
+  // Add Dashboard menu item if user is admin
+  if (currentUser?.isAdmin) {
+    menuItems.push({ icon: LayoutDashboard, text: 'Dashboard', path: '/dashboard' });
+  }
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -45,7 +50,7 @@ export function Sidebar() {
   }, [location]);
 
   const handleLogoDoubleClick = () => {
-    if (currentUser) {
+    if (currentUser?.isAdmin) {
       navigate('/dashboard');
     }
   };

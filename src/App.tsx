@@ -6,7 +6,7 @@ import { Notifications } from './pages/Notifications';
 
 import { Communities } from './pages/Communities';
 import { Profile } from './pages/Profile';
-import { Verified } from './pages/Verified';
+import { API } from './pages/API';
 import { Courses } from './pages/Courses';
 import { Dashboard } from './pages/Dashboard';
 import { AdminRoute } from './components/AdminRoute';
@@ -30,7 +30,7 @@ function App() {
           <Route path="/communities" element={<Communities />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/verified" element={<Verified />} />
+          <Route path="/api" element={<API />} />
           <Route
             path="/dashboard"
             element={
@@ -60,7 +60,7 @@ function App() {
               <Route path="/communities" element={<Communities />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/verified" element={<Verified />} />
+              <Route path="/api" element={<API />} />
               <Route
                 path="/dashboard"
                 element={

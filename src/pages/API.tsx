@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../firebase.ts';
+import { db, storage } from '../firebase';
 import { Copy, CheckCircle, AlertCircle, Shield, CreditCard, Banknote } from 'lucide-react';
 
 interface StudentData {
@@ -27,7 +27,7 @@ interface StudentData {
   registrationDate: Date;
 }
 
-export function Verified() {
+export function API() {
   const { currentUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [studentData, setStudentData] = useState<StudentData | null>(null);
@@ -199,7 +199,7 @@ export function Verified() {
     <div className="min-h-screen">
       {/* Mobile Header */}
       <div className="md:hidden sticky top-0 z-10 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
-        <h1 className="text-xl font-bold p-4 dark:text-white">Student Verification</h1>
+        <h1 className="text-xl font-bold p-4 dark:text-white">API Access</h1>
       </div>
 
       <div className="flex-1 flex flex-col p-4">
@@ -292,157 +292,158 @@ export function Verified() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleRegister} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  PAN Number
-                </label>
-                <input
-                  type="text"
-                  value={formData.pan}
-                  onChange={(e) => setFormData({ ...formData, pan: e.target.value })}
-                  placeholder="Enter your PAN number"
-                  className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  required
-                  pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-                  title="Please enter a valid PAN number (e.g., ABCDE1234F)"
-                />
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-xl font-semibold mb-4 dark:text-white">Get API Access</h2>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  Complete the verification process to get your API access.
+                </p>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  PAN Card Image
-                </label>
-                <input
-                  type="file"
-                  onChange={(e) => handleFileChange('panImage', e.target.files?.[0] || null)}
-                  accept="image/*"
-                  className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Aadhaar Number
-                </label>
-                <input
-                  type="text"
-                  value={formData.aadhaar}
-                  onChange={(e) => setFormData({ ...formData, aadhaar: e.target.value })}
-                  placeholder="Enter your Aadhaar number"
-                  className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  required
-                  pattern="[0-9]{12}"
-                  title="Please enter a valid 12-digit Aadhaar number"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Aadhaar Front
-                  </label>
-                  <input
-                    type="file"
-                    onChange={(e) => handleFileChange('aadhaarFront', e.target.files?.[0] || null)}
-                    accept="image/*"
-                    className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    required
-                  />
+              <form onSubmit={handleRegister} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      PAN Number
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pan}
+                      onChange={(e) => setFormData(prev => ({ ...prev, pan: e.target.value }))}
+                      className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      UPI ID
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.upi}
+                      onChange={(e) => setFormData(prev => ({ ...prev, upi: e.target.value }))}
+                      className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Aadhaar Number
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.aadhaar}
+                      onChange={(e) => setFormData(prev => ({ ...prev, aadhaar: e.target.value }))}
+                      className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      required
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Aadhaar Back
-                  </label>
-                  <input
-                    type="file"
-                    onChange={(e) => handleFileChange('aadhaarBack', e.target.files?.[0] || null)}
-                    accept="image/*"
-                    className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    required
-                  />
-                </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  UPI ID
-                </label>
-                <input
-                  type="text"
-                  value={formData.upi}
-                  onChange={(e) => setFormData({ ...formData, upi: e.target.value })}
-                  placeholder="Enter your UPI ID"
-                  className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  required
-                  pattern="[a-zA-Z0-9._-]+@[a-zA-Z]+"
-                  title="Please enter a valid UPI ID (e.g., name@upi)"
-                />
-              </div>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium dark:text-white">Bank Details</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Account Holder Name
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.bankDetails.accountHolderName}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          bankDetails: { ...prev.bankDetails, accountHolderName: e.target.value }
+                        }))}
+                        className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Account Number
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.bankDetails.accountNumber}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          bankDetails: { ...prev.bankDetails, accountNumber: e.target.value }
+                        }))}
+                        className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        IFSC Code
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.bankDetails.ifscCode}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          bankDetails: { ...prev.bankDetails, ifscCode: e.target.value }
+                        }))}
+                        className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
 
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium dark:text-white">Bank Details</h3>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Account Holder Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.bankDetails.accountHolderName}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      bankDetails: { ...formData.bankDetails, accountHolderName: e.target.value }
-                    })}
-                    placeholder="Enter account holder name"
-                    className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    required
-                  />
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium dark:text-white">Documents</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        PAN Card Image
+                      </label>
+                      <input
+                        type="file"
+                        onChange={(e) => handleFileChange('panImage', e.target.files?.[0] || null)}
+                        className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        accept="image/*"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Aadhaar Front
+                      </label>
+                      <input
+                        type="file"
+                        onChange={(e) => handleFileChange('aadhaarFront', e.target.files?.[0] || null)}
+                        className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        accept="image/*"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Aadhaar Back
+                      </label>
+                      <input
+                        type="file"
+                        onChange={(e) => handleFileChange('aadhaarBack', e.target.files?.[0] || null)}
+                        className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        accept="image/*"
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Account Number
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.bankDetails.accountNumber}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      bankDetails: { ...formData.bankDetails, accountNumber: e.target.value }
-                    })}
-                    placeholder="Enter account number"
-                    className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    IFSC Code
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.bankDetails.ifscCode}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      bankDetails: { ...formData.bankDetails, ifscCode: e.target.value }
-                    })}
-                    placeholder="Enter IFSC code"
-                    className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    required
-                    pattern="^[A-Z]{4}0[A-Z0-9]{6}$"
-                    title="Please enter a valid IFSC code (e.g., SBIN0001234)"
-                  />
-                </div>
-              </div>
 
-              <button
-                type="submit"
-                disabled={isRegistering}
-                className="w-full bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isRegistering ? 'Registering...' : 'Register as Student'}
-              </button>
-            </form>
+                <div className="flex justify-center">
+                  <button
+                    type="submit"
+                    disabled={isRegistering}
+                    className="bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+                  >
+                    {isRegistering ? 'Registering...' : 'Submit Verification'}
+                  </button>
+                </div>
+              </form>
+            </div>
           )}
         </div>
       </div>
