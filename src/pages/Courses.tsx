@@ -52,19 +52,6 @@ export function Courses() {
     fetchEnrolledCourses();
   }, [currentUser]);
 
-  const loadRazorpayScript = (): Promise<boolean> => {
-    return new Promise((resolve) => {
-      const existingScript = document.querySelector(`script[src="https://checkout.razorpay.com/v1/checkout.js"]`);
-      if (existingScript) return resolve(true);
-
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
   const handlePurchase = async (courseId: string) => {
     if (!currentUser) {
       setError('Please log in to purchase courses');
@@ -75,86 +62,83 @@ export function Courses() {
     setError('');
 
     try {
-      const isScriptLoaded = await loadRazorpayScript();
-      if (!isScriptLoaded) throw new Error('Failed to load Razorpay script');
-
+      // Get course details
       const courseDoc = await getDoc(doc(db, 'courses', courseId));
       if (!courseDoc.exists()) throw new Error('Course not found');
       const courseData = courseDoc.data();
 
-      const configDoc = await getDoc(doc(db, 'config', 'api'));
-      if (!configDoc.exists()) throw new Error('API configuration not found');
-      const token = configDoc.data().token;
+      // Create shorter IDs
+      const shortPlanId = courseId.slice(0, 8);
+      const shortStudentId = currentUser.uid.slice(0, 8);
 
-      console.log('Sending payment request with:', {
+      const requestBody = {
         amount: courseData.price * 100,
         currency: 'INR',
-        planId: courseId,
+        planId: shortPlanId,
         planName: courseData.title,
-        studentId: currentUser.uid
-      });
+        studentId: shortStudentId
+      };
 
-      const response = await fetch('https://lazyjobseeker.com/generatePaymentLink', {
+      // Log the request body
+      console.log('Request Body:', requestBody);
+
+      // Generate payment link
+      const response = await fetch(import.meta.env.VITE_PAYMENT_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${import.meta.env.VITE_FSOCIETY_TOKEN}`
         },
-        body: JSON.stringify({
-          amount: courseData.price * 100,
-          currency: 'INR',
-          planId: courseId,
-          planName: courseData.title,
-          studentId: currentUser.uid
-        })
+        body: JSON.stringify(requestBody)
       });
 
       const data = await response.json();
       console.log('Payment response:', data);
 
       if (!response.ok) {
-        throw new Error(data.error || data.details || 'Failed to create payment');
+        throw new Error(data.error || 'Failed to generate payment link');
       }
 
-      if (!data.paymentUrl) {
-        throw new Error('No payment URL received');
-      }
+      // Load Razorpay script
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      document.body.appendChild(script);
 
-      try {
-        await setDoc(doc(db, 'payment_requests', data.orderId), {
-          studentId: currentUser.uid,
-          courseId,
-          amount: courseData.price * 100,
-          currency: 'INR',
-          status: 'pending',
-          orderId: data.orderId,
-          createdAt: serverTimestamp()
-        });
-      } catch (firestoreError) {
-        console.error('Error storing payment request:', firestoreError);
-      }
+      script.onload = () => {
+        const options = {
+          key: import.meta.env.VITE_RAZORPAY_KEY,
+          amount: data.amount,
+          currency: data.currency,
+          name: 'FSociety',
+          description: courseData.title,
+          order_id: data.orderId,
+          handler: function (response: any) {
+            console.log('Payment successful:', response);
+            // Handle successful payment
+            verifyPayment(response.razorpay_payment_id, courseId);
+          },
+          prefill: {
+            name: currentUser.displayName || '',
+            email: currentUser.email || '',
+          },
+          notes: {
+            planId: courseId,
+            studentId: currentUser.uid
+          },
+          theme: {
+            color: '#2563eb'
+          }
+        };
 
-      window.open(data.paymentUrl, '_blank');
-
-      const options = {
-        key: data.razorpayKey || 'rzp_live_F12exZqFCX1b4l',
-        amount: data.amount,
-        currency: data.currency,
-        name: 'f-Society',
-        description: courseData.title,
-        order_id: data.orderId,
-        handler: (response: any) => verifyPayment(response, courseId),
-        prefill: {
-          name: currentUser.displayName || '',
-          email: currentUser.email || ''
-        },
-        theme: {
-          color: '#2563EB'
-        }
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
       };
 
-      const razorpay = new (window as any).Razorpay(options);
-      razorpay.open();
+      script.onerror = () => {
+        throw new Error('Failed to load Razorpay script');
+      };
+
     } catch (err) {
       console.error('Payment error:', err);
       setError(err instanceof Error ? err.message : 'Failed to process payment');
@@ -163,28 +147,43 @@ export function Courses() {
     }
   };
 
-  const verifyPayment = async (response: any, courseId: string) => {
+  const verifyPayment = async (orderId: string, courseId: string) => {
     try {
-      const configDoc = await getDoc(doc(db, 'config', 'api'));
-      if (!configDoc.exists()) throw new Error('API configuration not found');
-      const token = configDoc.data().token;
+      setLoading(true);
+      setError('');
 
-      const verifyResponse = await fetch('https://us-central1-lazy-job-seeker-4b29b.cloudfunctions.net/verifyPaymentStatus', {
+      const response = await fetch('https://us-central1-lazy-job-seeker-4b29b.cloudfunctions.net/verifyPayment', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          orderId: response.razorpay_order_id,
-          paymentId: response.razorpay_payment_id,
-          signature: response.razorpay_signature
+          orderId,
+          courseId,
+          studentId: currentUser?.uid
         })
       });
 
-      const data = await verifyResponse.json();
+      const data = await response.json();
+
       if (data.status === 'success') {
-        setEnrolledCourses((prev) => [...prev, courseId]);
+        // Update payment status in Firestore
+        const paymentQuery = query(
+          collection(db, 'payments'),
+          where('orderId', '==', orderId)
+        );
+        const paymentSnapshot = await getDocs(paymentQuery);
+        
+        if (!paymentSnapshot.empty) {
+          const paymentDoc = paymentSnapshot.docs[0];
+          await setDoc(paymentDoc.ref, {
+            status: 'success',
+            verifiedAt: serverTimestamp()
+          }, { merge: true });
+        }
+
+        // Add course to enrolled courses
+        setEnrolledCourses(prev => [...prev, courseId]);
         setError('');
       } else {
         setError('Payment verification failed');
@@ -192,8 +191,37 @@ export function Courses() {
     } catch (err) {
       console.error('Verification error:', err);
       setError('Failed to verify payment');
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Add useEffect to check for pending payments
+  useEffect(() => {
+    const checkPendingPayments = async () => {
+      if (!currentUser) return;
+
+      try {
+        const paymentsQuery = query(
+          collection(db, 'payments'),
+          where('studentId', '==', currentUser.uid),
+          where('status', '==', 'pending')
+        );
+        const paymentsSnapshot = await getDocs(paymentsQuery);
+        
+        for (const doc of paymentsSnapshot.docs) {
+          const payment = doc.data();
+          if (payment.orderId) {
+            await verifyPayment(payment.orderId, payment.courseId);
+          }
+        }
+      } catch (err) {
+        console.error('Error checking pending payments:', err);
+      }
+    };
+
+    checkPendingPayments();
+  }, [currentUser]);
 
   const handleStartCourse = (courseId: string) => {
     navigate(`/courses/${courseId}`);

@@ -8,15 +8,20 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # Dependencies
-node_modules
-.pnp
+/node_modules
+/.pnp
 .pnp.js
+/functions/node_modules
+/functions/.firebase
+/functions/lib
+/functions/dist
 
 # Testing
-coverage
+/coverage
 
 # Production
-dist
+/build
+/dist
 dist-ssr
 *.local
 
@@ -28,14 +33,18 @@ dist-ssr
 .env.production.local
 
 # Editor directories and files
+.idea/
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Misc
+.DS_Store
+
+
 
 
