@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { collection, getDocs, addDoc, query, where, getDoc, doc } from 'firebase/firestore';
-import { db } from '../firebase.ts';
+import { useState } from 'react';
+
+
 import { useAuth } from '../context/AuthContext';
-import { CheckCircle, Play, FileText, ArrowRight } from 'lucide-react';
+import { CheckCircle,  ArrowRight } from 'lucide-react';
 
 interface Course {
   id: string;
@@ -127,7 +127,7 @@ export function Courses() {
 
   const handlePurchase = async (courseId: string, price: number) => {
     if (!currentUser) {
-      // Handle not logged in
+      setError('Please log in to purchase courses');
       return;
     }
 
@@ -135,18 +135,16 @@ export function Courses() {
     setError('');
 
     try {
-      // Create payment request
-      const response = await fetch('https://createpaymentlink-net74gl7ba-uc.a.run.app', {
+      // Create payment request using Cloud Function
+      const response = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/purchaseCourse', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.REACT_APP_API_TOKEN}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          amount: price,
-          currency: 'INR',
-          planId: courseId,
-          planName: courses.find(c => c.id === courseId)?.title || 'Course Purchase'
+          userId: currentUser.uid,
+          courseId,
+          price
         })
       });
 
@@ -160,7 +158,7 @@ export function Courses() {
       window.location.href = data.paymentUrl;
     } catch (err) {
       console.error('Payment error:', err);
-      setError('Failed to process payment. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to process payment. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -169,6 +167,15 @@ export function Courses() {
   const filteredCourses = selectedCategory === 'all' 
     ? courses 
     : courses.filter(course => course.category === selectedCategory);
+
+  // Add loading state UI
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col">

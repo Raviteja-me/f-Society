@@ -1,4 +1,4 @@
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v2';
 import * as admin from 'firebase-admin';
 import * as crypto from 'crypto';
 import fetch from 'node-fetch';
@@ -41,7 +41,7 @@ export const registerStudent = functions.https.onRequest(async (req, res) => {
   }
 
   const { 
-    userId,  // This is the user's ID from the users collection
+    userId,
     name, 
     email, 
     pan, 
@@ -57,14 +57,12 @@ export const registerStudent = functions.https.onRequest(async (req, res) => {
   }
 
   try {
-    // Step 1: Verify that the user exists
     const userDoc = await db.collection('users').doc(userId).get();
     if (!userDoc.exists) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
 
-    // Step 2: Check if user is already a student
     const existingStudent = await db.collection('students')
       .where('userId', '==', userId)
       .limit(1)
@@ -75,12 +73,10 @@ export const registerStudent = functions.https.onRequest(async (req, res) => {
       return;
     }
 
-    // Step 3: Generate a secure API key for the student
     const apiKey = 'sk_' + crypto.randomBytes(32).toString('hex');
 
-    // Step 4: Create student document
     const studentRef = await db.collection('students').add({
-      userId,          // Reference to the user
+      userId,
       name,
       email,
       pan,
@@ -94,7 +90,6 @@ export const registerStudent = functions.https.onRequest(async (req, res) => {
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    // Step 5: Send notification to admin
     await db.collection('notifications').add({
       type: 'new_student',
       studentId: studentRef.id,
@@ -119,7 +114,6 @@ export const registerStudent = functions.https.onRequest(async (req, res) => {
 export const createPaymentRequest = functions.https.onRequest(async (req, res) => {
   const { apiKey, amount, currency, planId, planName } = req.body;
 
-  // Step 1: Validate student's API key
   const snap = await db.collection('students').where('apiKey', '==', apiKey).limit(1).get();
   if (snap.empty) {
     res.status(403).json({ error: 'Invalid API key' });
@@ -129,21 +123,18 @@ export const createPaymentRequest = functions.https.onRequest(async (req, res) =
   const student = snap.docs[0];
   const studentId = student.id;
 
-  // Step 2: Check if student is verified
   if (student.data().status !== 'verified') {
     res.status(403).json({ error: 'Student not verified' });
     return;
   }
 
   try {
-    // Step 3: Get our internal payment service token
     const token = await getApiToken();
 
-    // Step 4: Call payment service with our internal token
     const response = await fetch('https://generatepaymentlink-net74gl7ba-uc.a.run.app', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`, // Using our internal token
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ amount, currency, planId, planName, studentId })
@@ -156,7 +147,6 @@ export const createPaymentRequest = functions.https.onRequest(async (req, res) =
       return;
     }
 
-    // Step 5: Store payment request in Firestore
     await db.collection('payment_requests').doc(data.orderId).set({
       studentId,
       planId,
@@ -167,7 +157,6 @@ export const createPaymentRequest = functions.https.onRequest(async (req, res) =
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    // Step 6: Return payment URL to student
     res.status(200).json({ 
       paymentUrl: `https://checkout.razorpay.com/v1/checkout.js`, 
       orderDetails: data 
@@ -182,14 +171,11 @@ export const createPaymentRequest = functions.https.onRequest(async (req, res) =
 export const verifyPaymentRequest = functions.https.onRequest(async (req, res) => {
   const { apiKey, orderId, paymentId, signature } = req.body;
 
-  // Validate API Key
   const snap = await db.collection('students').where('apiKey', '==', apiKey).limit(1).get();
   if (snap.empty) {
     res.status(403).json({ error: 'Invalid API key' });
     return;
   }
-
-  const student = snap.docs[0];
 
   try {
     const token = await getApiToken();
@@ -216,6 +202,124 @@ export const verifyPaymentRequest = functions.https.onRequest(async (req, res) =
         reason: data.reason || 'Invalid signature',
         verifiedAt: admin.firestore.FieldValue.serverTimestamp()
       });
+    }
+
+    res.status(200).json(data);
+  } catch (err) {
+    console.error('Verification error:', err);
+    res.status(500).json({ error: 'Verification failed' });
+  }
+});
+
+// Course Purchase Function
+export const purchaseCourse = functions.https.onRequest(async (req, res) => {
+  if (req.method !== 'POST') {
+    res.status(405).send('Method Not Allowed');
+    return;
+  }
+
+  const { userId, courseId } = req.body;
+
+  if (!userId || !courseId) {
+    res.status(400).json({ error: 'Missing required fields' });
+    return;
+  }
+
+  try {
+    const courseDoc = await db.collection('courses').doc(courseId).get();
+    if (!courseDoc.exists) {
+      res.status(404).json({ error: 'Course not found' });
+      return;
+    }
+
+    const courseData = courseDoc.data();
+    if (!courseData) {
+      res.status(404).json({ error: 'Course data not found' });
+      return;
+    }
+
+    const token = await getApiToken();
+
+    const response = await fetch('https://generatepaymentlink-net74gl7ba-uc.a.run.app', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        amount: courseData.price,
+        currency: 'INR',
+        planId: courseId,
+        planName: courseData.title
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      res.status(500).json({ error: 'Payment link generation failed', detail: data });
+      return;
+    }
+
+    await db.collection('purchases').doc(`${userId}_${courseId}`).set({
+      userId,
+      courseId,
+      status: 'pending',
+      orderId: data.orderId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    res.status(200).json({ 
+      paymentUrl: data.paymentUrl,
+      orderDetails: data
+    });
+  } catch (error) {
+    console.error('Error processing course purchase:', error);
+    res.status(500).json({ error: 'Failed to process purchase' });
+  }
+});
+
+// Verify Course Purchase
+export const verifyCoursePurchase = functions.https.onRequest(async (req, res) => {
+  const { orderId, paymentId, signature } = req.body;
+
+  try {
+    const token = await getApiToken();
+    const response = await fetch('https://verifypaymentstatus-net74gl7ba-uc.a.run.app', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ orderId, paymentId, signature })
+    });
+
+    const data = await response.json();
+
+    if (data.status === 'success') {
+      const purchaseQuery = await db.collection('purchases')
+        .where('orderId', '==', orderId)
+        .limit(1)
+        .get();
+
+      if (!purchaseQuery.empty) {
+        const purchaseDoc = purchaseQuery.docs[0];
+        await purchaseDoc.ref.update({
+          status: 'completed',
+          paymentId,
+          verifiedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        await db.collection('notifications').add({
+          userId: purchaseDoc.data().userId,
+          type: 'course_purchase',
+          title: 'Course Purchase Successful',
+          message: 'You now have access to your purchased course.',
+          read: false,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          link: `/courses/${purchaseDoc.data().courseId}`
+        });
+      }
     }
 
     res.status(200).json(data);

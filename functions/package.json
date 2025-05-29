@@ -18,6 +18,7 @@
     "typescript": "^5.8.3"
   },
   "devDependencies": {
+    "@types/firebase": "^2.4.32",
     "@types/node-fetch": "^2.6.12"
   }
 }
