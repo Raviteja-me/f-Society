@@ -45,43 +45,69 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateApiToken = exports.verifyCoursePurchase = exports.purchaseCourse = exports.verifyPaymentRequest = exports.createPaymentRequest = exports.registerStudent = void 0;
-const functions = __importStar(require("firebase-functions/v2"));
+exports.updateApiToken = exports.verifyCoursePurchase = exports.purchaseCourse = exports.verifyPaymentStatus = exports.createPaymentRequest = exports.registerStudent = exports.getApiToken = void 0;
+const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const crypto = __importStar(require("crypto"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
+const cors_1 = __importDefault(require("cors"));
 admin.initializeApp();
 const db = admin.firestore();
-// Initialize API token in Firestore
-function initializeApiToken() {
+// Initialize CORS middleware
+const corsMiddleware = (0, cors_1.default)({
+    origin: ['https://fsociety.today', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+});
+// Helper function to handle CORS
+const corsHandler = (req, res, handler) => {
+    corsMiddleware(req, res, () => {
+        handler().catch(error => {
+            console.error('Error in handler:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        });
+    });
+};
+// Helper function to validate token
+function validateToken(req) {
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.replace('Bearer ', '');
+    return token === process.env.FSOCIETY_TOKEN;
+}
+// Helper function to validate student API key
+function validateStudentApiKey(apiKey) {
     return __awaiter(this, void 0, void 0, function* () {
-        const configRef = db.collection('config').doc('api');
-        const configDoc = yield configRef.get();
-        if (!configDoc.exists) {
-            yield configRef.set({
-                token: '918f67462af220b73ed459ef56e3bc29b7c68cbce79766a71c55a9c25bde9d6a',
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                updatedAt: admin.firestore.FieldValue.serverTimestamp()
-            });
-            console.log('API token initialized in Firestore');
+        try {
+            const studentQuery = yield db.collection('students')
+                .where('apiKey', '==', apiKey)
+                .limit(1)
+                .get();
+            if (studentQuery.empty) {
+                return { isValid: false };
+            }
+            const student = studentQuery.docs[0];
+            if (student.data().status !== 'verified') {
+                return { isValid: false };
+            }
+            return { isValid: true, studentId: student.id };
+        }
+        catch (error) {
+            console.error('Error validating student API key:', error);
+            return { isValid: false };
         }
     });
 }
-// Call initialization when the function is deployed
-initializeApiToken().catch(console.error);
-// Helper function to get API token
-function getApiToken() {
-    return __awaiter(this, void 0, void 0, function* () {
-        var _a;
-        const configDoc = yield db.collection('config').doc('api').get();
-        if (!configDoc.exists) {
-            throw new Error('API configuration not found');
-        }
-        return (_a = configDoc.data()) === null || _a === void 0 ? void 0 : _a.token;
-    });
-}
-// 1. Register Student
-exports.registerStudent = functions.https.onRequest((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// Get API Token
+exports.getApiToken = (0, https_1.onRequest)({ cors: true }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
+        return;
+    }
+    res.json({ token: process.env.FSOCIETY_TOKEN });
+}));
+// Register Student
+exports.registerStudent = (0, https_1.onRequest)({ cors: true }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.method !== 'POST') {
         res.status(405).send('Method Not Allowed');
         return;
@@ -139,37 +165,54 @@ exports.registerStudent = functions.https.onRequest((req, res) => __awaiter(void
         res.status(500).json({ error: 'Failed to register student' });
     }
 }));
-// 2. Create Payment Request
-exports.createPaymentRequest = functions.https.onRequest((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { apiKey, amount, currency, planId, planName } = req.body;
-    const snap = yield db.collection('students').where('apiKey', '==', apiKey).limit(1).get();
-    if (snap.empty) {
-        res.status(403).json({ error: 'Invalid API key' });
+// Create Payment Request
+exports.createPaymentRequest = (0, https_1.onRequest)({ cors: true }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
         return;
     }
-    const student = snap.docs[0];
-    const studentId = student.id;
-    if (student.data().status !== 'verified') {
-        res.status(403).json({ error: 'Student not verified' });
+    const { apiKey, amount, currency, planId, planName, studentId: providedStudentId } = req.body;
+    let finalStudentId = providedStudentId;
+    // If apiKey is provided, validate it (external student API)
+    if (apiKey) {
+        const { isValid, studentId: validatedStudentId } = yield validateStudentApiKey(apiKey);
+        if (!isValid) {
+            res.status(403).json({ error: 'Invalid or unverified API key' });
+            return;
+        }
+        // Use the validated studentId
+        finalStudentId = validatedStudentId;
+    }
+    // For internal website purchases, studentId should be provided directly
+    if (!finalStudentId || !amount || !currency || !planId || !planName) {
+        res.status(400).json({ error: 'Missing required fields' });
         return;
     }
     try {
-        const token = yield getApiToken();
-        const response = yield (0, node_fetch_1.default)('https://generatepaymentlink-net74gl7ba-uc.a.run.app', {
+        // Get token from config
+        const token = process.env.FSOCIETY_TOKEN;
+        // Generate payment link from lazyjobseeker.com
+        const response = yield (0, node_fetch_1.default)('https://lazyjobseeker.com/generatePaymentLink', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ amount, currency, planId, planName, studentId })
+            body: JSON.stringify({
+                amount,
+                currency,
+                planId,
+                planName,
+                studentId: finalStudentId
+            })
         });
         const data = yield response.json();
         if (!response.ok) {
-            res.status(500).json({ error: 'Link generation failed', detail: data });
-            return;
+            throw new Error(data.error || 'Failed to generate payment link');
         }
+        // Store payment request
         yield db.collection('payment_requests').doc(data.orderId).set({
-            studentId,
+            studentId: finalStudentId,
             planId,
             planName,
             amount,
@@ -177,60 +220,91 @@ exports.createPaymentRequest = functions.https.onRequest((req, res) => __awaiter
             status: 'pending',
             createdAt: admin.firestore.FieldValue.serverTimestamp()
         });
-        res.status(200).json({
-            paymentUrl: `https://checkout.razorpay.com/v1/checkout.js`,
+        res.json({
+            paymentUrl: data.paymentUrl,
             orderDetails: data
         });
     }
-    catch (err) {
-        console.error('Failed to create payment:', err);
-        res.status(500).json({ error: 'Server error' });
+    catch (error) {
+        console.error('Error creating payment request:', error);
+        res.status(500).json({ error: 'Failed to create payment request' });
     }
 }));
-// 3. Verify Payment Request
-exports.verifyPaymentRequest = functions.https.onRequest((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// Verify Payment Status
+exports.verifyPaymentStatus = (0, https_1.onRequest)({ cors: true }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
+        return;
+    }
     const { apiKey, orderId, paymentId, signature } = req.body;
-    const snap = yield db.collection('students').where('apiKey', '==', apiKey).limit(1).get();
-    if (snap.empty) {
-        res.status(403).json({ error: 'Invalid API key' });
+    // If apiKey is provided, validate it (external student API)
+    if (apiKey) {
+        const { isValid } = yield validateStudentApiKey(apiKey);
+        if (!isValid) {
+            res.status(403).json({ error: 'Invalid or unverified API key' });
+            return;
+        }
+    }
+    if (!orderId || !paymentId || !signature) {
+        res.status(400).json({ error: 'Missing required fields' });
         return;
     }
     try {
-        const token = yield getApiToken();
-        const response = yield (0, node_fetch_1.default)('https://verifypaymentstatus-net74gl7ba-uc.a.run.app', {
+        // Get token from config
+        const token = process.env.FSOCIETY_TOKEN;
+        // Verify payment with lazyjobseeker.com
+        const response = yield (0, node_fetch_1.default)('https://lazyjobseeker.com/verifyPaymentStatus', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ orderId, paymentId, signature })
+            body: JSON.stringify({
+                orderId,
+                paymentId,
+                signature
+            })
         });
         const data = yield response.json();
         if (data.status === 'success') {
+            // Update payment request status
             yield db.collection('payment_requests').doc(orderId).update({
                 status: 'success',
                 paymentId,
                 verifiedAt: admin.firestore.FieldValue.serverTimestamp()
             });
+            // Add course to enrollments
+            const paymentRequest = yield db.collection('payment_requests').doc(orderId).get();
+            const paymentData = paymentRequest.data();
+            if (paymentData) {
+                yield db.collection('enrollments').add({
+                    courseId: paymentData.planId,
+                    studentId: paymentData.studentId,
+                    enrolledAt: admin.firestore.FieldValue.serverTimestamp(),
+                    progress: 0,
+                    paymentId,
+                    orderId
+                });
+            }
         }
         else {
             yield db.collection('payment_requests').doc(orderId).update({
                 status: 'failed',
-                reason: data.reason || 'Invalid signature',
+                reason: data.reason || 'Payment verification failed',
                 verifiedAt: admin.firestore.FieldValue.serverTimestamp()
             });
         }
-        res.status(200).json(data);
+        res.json(data);
     }
-    catch (err) {
-        console.error('Verification error:', err);
-        res.status(500).json({ error: 'Verification failed' });
+    catch (error) {
+        console.error('Error verifying payment:', error);
+        res.status(500).json({ error: 'Failed to verify payment' });
     }
 }));
-// Course Purchase Function
-exports.purchaseCourse = functions.https.onRequest((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    if (req.method !== 'POST') {
-        res.status(405).send('Method Not Allowed');
+// Course Purchase Function (Internal website)
+exports.purchaseCourse = (0, https_1.onRequest)({ cors: true }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
         return;
     }
     const { userId, courseId } = req.body;
@@ -239,6 +313,7 @@ exports.purchaseCourse = functions.https.onRequest((req, res) => __awaiter(void 
         return;
     }
     try {
+        // Get course details
         const courseDoc = yield db.collection('courses').doc(courseId).get();
         if (!courseDoc.exists) {
             res.status(404).json({ error: 'Course not found' });
@@ -249,52 +324,65 @@ exports.purchaseCourse = functions.https.onRequest((req, res) => __awaiter(void 
             res.status(404).json({ error: 'Course data not found' });
             return;
         }
-        const token = yield getApiToken();
-        const response = yield (0, node_fetch_1.default)('https://generatepaymentlink-net74gl7ba-uc.a.run.app', {
+        // Create payment request
+        const paymentResponse = yield (0, node_fetch_1.default)('https://lazyjobseeker.com/generatePaymentLink', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.FSOCIETY_TOKEN}`
             },
             body: JSON.stringify({
                 amount: courseData.price,
                 currency: 'INR',
                 planId: courseId,
-                planName: courseData.title
+                planName: courseData.title,
+                studentId: userId
             })
         });
-        const data = yield response.json();
-        if (!response.ok) {
-            res.status(500).json({ error: 'Payment link generation failed', detail: data });
-            return;
+        const paymentData = yield paymentResponse.json();
+        if (!paymentResponse.ok) {
+            throw new Error(paymentData.error || 'Failed to generate payment link');
         }
-        yield db.collection('purchases').doc(`${userId}_${courseId}`).set({
-            userId,
+        // Store payment request
+        yield db.collection('payment_requests').doc(paymentData.orderId).set({
+            studentId: userId,
             courseId,
+            planId: courseId,
+            planName: courseData.title,
+            amount: courseData.price,
+            orderId: paymentData.orderId,
             status: 'pending',
-            orderId: data.orderId,
             createdAt: admin.firestore.FieldValue.serverTimestamp()
         });
-        res.status(200).json({
-            paymentUrl: data.paymentUrl,
-            orderDetails: data
+        res.json({
+            paymentUrl: paymentData.paymentUrl,
+            orderDetails: paymentData
         });
     }
     catch (error) {
-        console.error('Error processing course purchase:', error);
-        res.status(500).json({ error: 'Failed to process purchase' });
+        console.error('Error purchasing course:', error);
+        res.status(500).json({ error: 'Failed to purchase course' });
     }
 }));
 // Verify Course Purchase
-exports.verifyCoursePurchase = functions.https.onRequest((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.verifyCoursePurchase = (0, https_1.onRequest)({ cors: true }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
+        return;
+    }
     const { orderId, paymentId, signature } = req.body;
+    if (!orderId || !paymentId || !signature) {
+        res.status(400).json({ error: 'Missing required fields' });
+        return;
+    }
     try {
-        const token = yield getApiToken();
-        const response = yield (0, node_fetch_1.default)('https://verifypaymentstatus-net74gl7ba-uc.a.run.app', {
+        // Get token from config
+        const token = process.env.FSOCIETY_TOKEN;
+        const response = yield (0, node_fetch_1.default)('https://lazyjobseeker.com/verifyPaymentStatus', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({ orderId, paymentId, signature })
         });
@@ -330,7 +418,7 @@ exports.verifyCoursePurchase = functions.https.onRequest((req, res) => __awaiter
     }
 }));
 // Function to update API token
-exports.updateApiToken = functions.https.onRequest((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.updateApiToken = (0, https_1.onRequest)({ cors: true }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // Only allow POST requests
     if (req.method !== 'POST') {
         res.status(405).send('Method Not Allowed');

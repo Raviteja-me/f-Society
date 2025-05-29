@@ -52,7 +52,7 @@ export function Courses() {
     fetchEnrolledCourses();
   }, [currentUser]);
 
-  const handlePurchase = async (courseId: string, price: number) => {
+  const handlePurchase = async (courseId: string) => {
     if (!currentUser) {
       setError('Please log in to purchase courses');
       return;
@@ -62,23 +62,15 @@ export function Courses() {
     setError('');
 
     try {
-      // First, get the API token
-      const tokenResponse = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/getApiToken');
-      const { token } = await tokenResponse.json();
-
-      // Then make the payment request with the token
-      const response = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/generatePaymentLink', {
+      // Make the payment request
+      const response = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/purchaseCourse', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          amount: price * 100, // Convert to paise
-          currency: 'INR',
-          planId: courseId,
-          planName: courses.find(c => c.id === courseId)?.title || 'Course Purchase',
-          studentId: currentUser.uid
+          userId: currentUser.uid,
+          courseId
         })
       });
 
@@ -90,12 +82,12 @@ export function Courses() {
 
       // Initialize Razorpay
       const options = {
-        key: data.razorpayKey,
-        amount: data.amount,
-        currency: data.currency,
+        key: data.orderDetails.razorpayKey,
+        amount: data.orderDetails.amount,
+        currency: data.orderDetails.currency,
         name: "f-Society",
         description: "Course Purchase",
-        order_id: data.orderId,
+        order_id: data.orderDetails.orderId,
         handler: function (response: any) {
           // Handle successful payment
           verifyPayment(response);
@@ -121,14 +113,10 @@ export function Courses() {
 
   const verifyPayment = async (response: any) => {
     try {
-      const tokenResponse = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/getApiToken');
-      const { token } = await tokenResponse.json();
-
-      const verifyResponse = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/verifyPaymentStatus', {
+      const verifyResponse = await fetch('https://us-central1-mydatabase-10917.cloudfunctions.net/verifyCoursePurchase', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           orderId: response.razorpay_order_id,
@@ -140,7 +128,7 @@ export function Courses() {
       const data = await verifyResponse.json();
       if (data.status === 'success') {
         // Add course to enrolled courses
-        setEnrolledCourses(prev => [...prev, data.courseId]);
+        setEnrolledCourses(prev => [...prev, data.planId]);
         setError('');
       } else {
         setError('Payment verification failed');
@@ -241,7 +229,7 @@ export function Courses() {
                           </button>
                         ) : (
                           <button
-                            onClick={() => handlePurchase(course.id, course.price)}
+                            onClick={() => handlePurchase(course.id)}
                             disabled={loading}
                             className="flex items-center space-x-1 bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition-colors text-sm"
                           >
