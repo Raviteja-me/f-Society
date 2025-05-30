@@ -60,7 +60,8 @@ export function Courses() {
       const response = await fetch('https://us-central1-lazy-job-seeker-4b29b.cloudfunctions.net/verifyPaymentStatus', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_FSOCIETY_TOKEN}`
         },
         body: JSON.stringify({
           razorpay_payment_id: paymentId,
@@ -72,6 +73,7 @@ export function Courses() {
       });
 
       const data = await response.json();
+      console.log('Verification response:', data);
 
       if (data.status === 'ok') {
         // Update payment status in Firestore
@@ -204,33 +206,6 @@ export function Courses() {
       setLoading(false);
     }
   };
-
-  // Add useEffect to check for pending payments
-  useEffect(() => {
-    const checkPendingPayments = async () => {
-      if (!currentUser) return;
-
-      try {
-        const paymentsQuery = query(
-          collection(db, 'payments'),
-          where('studentId', '==', currentUser.uid),
-          where('status', '==', 'pending')
-        );
-        const paymentsSnapshot = await getDocs(paymentsQuery);
-        
-        for (const doc of paymentsSnapshot.docs) {
-          const payment = doc.data();
-          if (payment.orderId) {
-            await verifyPayment(payment.paymentId, payment.orderId, payment.signature, payment.courseId);
-          }
-        }
-      } catch (err) {
-        console.error('Error checking pending payments:', err);
-      }
-    };
-
-    checkPendingPayments();
-  }, [currentUser]);
 
   const handleStartCourse = (courseId: string) => {
     navigate(`/courses/${courseId}`);
