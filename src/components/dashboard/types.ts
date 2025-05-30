@@ -59,6 +59,21 @@ export interface Post {
   };
 }
 
+export interface CourseMaterial {
+  type: 'video' | 'image' | 'pdf' | 'other';
+  url: string;
+  title: string;
+  description?: string;
+}
+
+export interface CourseClass {
+  title: string;
+  description: string;
+  materials: CourseMaterial[];
+  instructions: string;
+  order: number;
+}
+
 export interface Course {
   id: string;
   title: string;
@@ -69,6 +84,8 @@ export interface Course {
   category: string;
   level: string;
   image: string;
+  classes: CourseClass[];
+  totalClasses: number;
 }
 
 export type DashboardTab = 'students' | 'payments' | 'users' | 'posts' | 'courses'; 

@@ -8,6 +8,7 @@ import { Communities } from './pages/Communities';
 import { Profile } from './pages/Profile';
 import { API } from './pages/API';
 import { Courses } from './pages/Courses';
+import { CourseView } from './pages/CourseView';
 import { Dashboard } from './pages/Dashboard';
 import { AdminRoute } from './components/AdminRoute';
 import { Widgets } from './components/Widgets';
@@ -24,11 +25,10 @@ function App() {
       <div className="w-full md:hidden">
         <Routes>
           <Route path="/" element={<Home />} />
-       
           <Route path="/notifications" element={<Notifications />} />
-       
           <Route path="/communities" element={<Communities />} />
           <Route path="/courses" element={<Courses />} />
+          <Route path="/course/:courseId" element={<CourseView />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/api" element={<API />} />
           <Route
@@ -54,11 +54,10 @@ function App() {
           <div className="flex-1 max-w-[600px] w-full border-x border-gray-200 dark:border-gray-800 flex flex-col min-h-screen">
             <Routes>
               <Route path="/" element={<Home />} />
-       
               <Route path="/notifications" element={<Notifications />} />
-        
               <Route path="/communities" element={<Communities />} />
               <Route path="/courses" element={<Courses />} />
+              <Route path="/course/:courseId" element={<CourseView />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/api" element={<API />} />
               <Route

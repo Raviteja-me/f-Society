@@ -8,16 +8,15 @@ import { PaymentsTab } from '../components/dashboard/PaymentsTab';
 import { UsersTab } from '../components/dashboard/UsersTab';
 import { PostsTab } from '../components/dashboard/PostsTab';
 import { CoursesTab } from '../components/dashboard/CoursesTab';
-import { Student, PaymentRequest, User, Post, Course, DashboardTab } from '../components/dashboard/types';
+import { Student, PaymentRequest, User, Post, DashboardTab } from '../components/dashboard/types';
 
 export function Dashboard() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
   const [paymentRequests, setPaymentRequests] = useState<PaymentRequest[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [users] = useState<User[]>([]);
+  const [posts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<DashboardTab>('students');
@@ -100,60 +99,6 @@ export function Dashboard() {
     verifyAdminAndFetchData();
   }, [currentUser, navigate]);
 
-  const fetchUsers = async () => {
-    try {
-      const usersSnapshot = await getDocs(collection(db, 'users'));
-      const usersData = usersSnapshot.docs.map((doc: any) => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date()
-      })) as User[];
-      setUsers(usersData);
-    } catch (err) {
-      console.error('Error fetching users:', err);
-      setError('Failed to fetch users');
-    }
-  };
-
-  const fetchPosts = async () => {
-    try {
-      const postsSnapshot = await getDocs(collection(db, 'posts'));
-      const postsData = postsSnapshot.docs.map((doc: any) => ({
-        id: doc.id,
-        ...doc.data(),
-        timestamp: doc.data().timestamp?.toDate() || new Date()
-      })) as Post[];
-      setPosts(postsData);
-    } catch (err) {
-      console.error('Error fetching posts:', err);
-      setError('Failed to fetch posts');
-    }
-  };
-
-  const fetchCourses = async () => {
-    try {
-      const coursesSnapshot = await getDocs(collection(db, 'courses'));
-      const coursesData = coursesSnapshot.docs.map((doc: any) => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Course[];
-      setCourses(coursesData);
-    } catch (err) {
-      console.error('Error fetching courses:', err);
-      setError('Failed to fetch courses');
-    }
-  };
-
-  useEffect(() => {
-    if (activeTab === 'users') {
-      fetchUsers();
-    } else if (activeTab === 'posts') {
-      fetchPosts();
-    } else if (activeTab === 'courses') {
-      fetchCourses();
-    }
-  }, [activeTab]);
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -212,19 +157,11 @@ export function Dashboard() {
       )}
 
       {activeTab === 'posts' && (
-        <PostsTab
-          posts={posts}
-          setError={setError}
-          fetchPosts={fetchPosts}
-        />
+        <PostsTab posts={posts} setError={setError} />
       )}
 
       {activeTab === 'courses' && (
-        <CoursesTab
-          courses={courses}
-          setError={setError}
-          fetchCourses={fetchCourses}
-        />
+        <CoursesTab />
       )}
     </div>
   );

@@ -9,10 +9,9 @@ import { useAuth } from '../../context/AuthContext';
 interface PostsTabProps {
   posts: Post[];
   setError: (error: string) => void;
-  fetchPosts: () => Promise<void>;
 }
 
-export function PostsTab({ posts, setError, fetchPosts }: PostsTabProps) {
+export function PostsTab({ posts, setError }: PostsTabProps) {
   const { currentUser } = useAuth();
   const [showNewPostModal, setShowNewPostModal] = useState(false);
   const [newPostContent, setNewPostContent] = useState('');
@@ -76,7 +75,6 @@ export function PostsTab({ posts, setError, fetchPosts }: PostsTabProps) {
       setNewPostContent('');
       setSelectedFiles([]);
       setShowNewPostModal(false);
-      fetchPosts();
     } catch (err) {
       console.error('Error creating post:', err);
       setError('Failed to create post');
@@ -108,7 +106,6 @@ export function PostsTab({ posts, setError, fetchPosts }: PostsTabProps) {
       setSelectedFiles([]);
       setEditingPost(null);
       setShowNewPostModal(false);
-      fetchPosts();
     } catch (err) {
       console.error('Error updating post:', err);
       setError('Failed to update post');
@@ -122,7 +119,6 @@ export function PostsTab({ posts, setError, fetchPosts }: PostsTabProps) {
 
     try {
       await deleteDoc(doc(db, 'posts', postId));
-      fetchPosts();
     } catch (err) {
       console.error('Error deleting post:', err);
       setError('Failed to delete post');

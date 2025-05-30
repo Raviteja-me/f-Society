@@ -167,7 +167,7 @@ export function Courses() {
   };
 
   const handleStartCourse = (courseId: string) => {
-    navigate(`/courses/${courseId}`);
+    navigate(`/course/${courseId}`);
   };
 
   const filteredCourses =
