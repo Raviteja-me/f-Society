@@ -52,6 +52,59 @@ export function Courses() {
     fetchEnrolledCourses();
   }, [currentUser]);
 
+  const verifyPayment = async (paymentId: string, orderId: string, signature: string, courseId: string) => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const response = await fetch('https://us-central1-lazy-job-seeker-4b29b.cloudfunctions.net/verifyPaymentStatus', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          razorpay_payment_id: paymentId,
+          razorpay_order_id: orderId,
+          razorpay_signature: signature,
+          courseId,
+          studentId: currentUser?.uid
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'ok') {
+        // Update payment status in Firestore
+        const paymentQuery = query(
+          collection(db, 'payments'),
+          where('orderId', '==', orderId)
+        );
+        const paymentSnapshot = await getDocs(paymentQuery);
+        
+        if (!paymentSnapshot.empty) {
+          const paymentDoc = paymentSnapshot.docs[0];
+          await setDoc(paymentDoc.ref, {
+            status: 'success',
+            paymentId,
+            signature,
+            verifiedAt: serverTimestamp()
+          }, { merge: true });
+        }
+
+        // Add course to enrolled courses
+        setEnrolledCourses(prev => [...prev, courseId]);
+        setError('');
+      } else {
+        setError('Payment verification failed');
+      }
+    } catch (err) {
+      console.error('Verification error:', err);
+      setError('Failed to verify payment');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePurchase = async (courseId: string) => {
     if (!currentUser) {
       setError('Please log in to purchase courses');
@@ -106,7 +159,12 @@ export function Courses() {
         order_id: data.orderId,
         handler: function (response: any) {
           console.log('Payment successful:', response);
-          verifyPayment(response.razorpay_payment_id, courseId);
+          verifyPayment(
+            response.razorpay_payment_id,
+            response.razorpay_order_id,
+            response.razorpay_signature,
+            courseId
+          );
         },
         prefill: {
           name: currentUser.displayName || '',
@@ -147,55 +205,6 @@ export function Courses() {
     }
   };
 
-  const verifyPayment = async (orderId: string, courseId: string) => {
-    try {
-      setLoading(true);
-      setError('');
-
-      const response = await fetch('https://us-central1-lazy-job-seeker-4b29b.cloudfunctions.net/verifyPayment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          orderId,
-          courseId,
-          studentId: currentUser?.uid
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.status === 'success') {
-        // Update payment status in Firestore
-        const paymentQuery = query(
-          collection(db, 'payments'),
-          where('orderId', '==', orderId)
-        );
-        const paymentSnapshot = await getDocs(paymentQuery);
-        
-        if (!paymentSnapshot.empty) {
-          const paymentDoc = paymentSnapshot.docs[0];
-          await setDoc(paymentDoc.ref, {
-            status: 'success',
-            verifiedAt: serverTimestamp()
-          }, { merge: true });
-        }
-
-        // Add course to enrolled courses
-        setEnrolledCourses(prev => [...prev, courseId]);
-        setError('');
-      } else {
-        setError('Payment verification failed');
-      }
-    } catch (err) {
-      console.error('Verification error:', err);
-      setError('Failed to verify payment');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Add useEffect to check for pending payments
   useEffect(() => {
     const checkPendingPayments = async () => {
@@ -212,7 +221,7 @@ export function Courses() {
         for (const doc of paymentsSnapshot.docs) {
           const payment = doc.data();
           if (payment.orderId) {
-            await verifyPayment(payment.orderId, payment.courseId);
+            await verifyPayment(payment.paymentId, payment.orderId, payment.signature, payment.courseId);
           }
         }
       } catch (err) {
