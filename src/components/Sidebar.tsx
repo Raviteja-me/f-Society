@@ -20,7 +20,6 @@ export function Sidebar() {
     { icon: Bell, text: 'Notifications', path: '/notifications' },
     { icon: BookOpen, text: 'Courses', path: '/courses' },
     { icon: Users, text: 'Communities', path: '/communities' },
-    { icon: Key, text: 'API', path: '/api' },
     { icon: User, text: 'Profile', path: '/profile' }
   ];
 
