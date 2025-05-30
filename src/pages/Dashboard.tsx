@@ -15,8 +15,8 @@ export function Dashboard() {
   const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
   const [paymentRequests, setPaymentRequests] = useState<PaymentRequest[]>([]);
-  const [users] = useState<User[]>([]);
-  const [posts] = useState<Post[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<DashboardTab>('students');
@@ -85,8 +85,38 @@ export function Dashboard() {
           verifiedAt: doc.data().verifiedAt?.toDate()
         }));
 
+        // Fetch users
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        const usersData: User[] = usersSnapshot.docs.map((doc: any) => ({
+          id: doc.id,
+          name: doc.data().name || '',
+          email: doc.data().email || '',
+          photoURL: doc.data().photoURL || '',
+          isAdmin: doc.data().isAdmin || false,
+          createdAt: doc.data().createdAt?.toDate() || new Date()
+        }));
+
+        // Fetch posts
+        const postsSnapshot = await getDocs(collection(db, 'posts'));
+        const postsData: Post[] = postsSnapshot.docs.map((doc: any) => ({
+          id: doc.id,
+          content: doc.data().content || '',
+          authorId: doc.data().authorId || '',
+          authorName: doc.data().authorName || '',
+          authorAvatar: doc.data().authorAvatar || '',
+          timestamp: doc.data().timestamp?.toDate() || new Date(),
+          media: doc.data().media || [],
+          stats: {
+            likes: doc.data().stats?.likes || 0,
+            comments: doc.data().stats?.comments || 0,
+            shares: doc.data().stats?.shares || 0
+          }
+        }));
+
         setStudents(studentsData);
         setPaymentRequests(paymentsData);
+        setUsers(usersData);
+        setPosts(postsData);
         setError('');
       } catch (err) {
         console.error('Error in fetchData:', err);
