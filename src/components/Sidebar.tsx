@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Bell, BookOpen, Users, Key, User, LogOut, Menu, X, LayoutDashboard } from 'lucide-react';
+import { Home, Bell, BookOpen, Users,  User, LogOut, Menu, X, LayoutDashboard } from 'lucide-react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { Link } from './Link';
 import { ThemeToggle } from './ThemeToggle';

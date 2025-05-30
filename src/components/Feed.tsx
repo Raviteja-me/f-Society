@@ -12,7 +12,7 @@ import {
   getDoc
 } from 'firebase/firestore';
 import { db } from '../firebase.ts';
-import { MessageCircle, Heart, Share, ThumbsUp } from 'lucide-react';
+import { MessageCircle, Heart, Share, ThumbsUp, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { FileText } from 'lucide-react';
 
@@ -54,6 +54,7 @@ export function Feed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentText, setCommentText] = useState('');
   const [activeCommentPost, setActiveCommentPost] = useState<string | null>(null);
+  const [expandedPosts, setExpandedPosts] = useState<{ [key: string]: boolean }>({});
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -195,6 +196,24 @@ export function Feed() {
     });
   };
 
+  const togglePostExpansion = (postId: string) => {
+    setExpandedPosts(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
+  };
+
+  const shouldShowSeeMore = (content: string) => {
+    return content.length > 300;
+  };
+
+  const getTruncatedContent = (content: string, postId: string) => {
+    if (!shouldShowSeeMore(content) || expandedPosts[postId]) {
+      return content;
+    }
+    return content.slice(0, 300) + '...';
+  };
+
   return (
     <div className="divide-y divide-gray-200 dark:divide-gray-800">
       {/* Mobile Header */}
@@ -223,7 +242,25 @@ export function Feed() {
 
             {/* Post Content */}
             <div className="text-gray-900 dark:text-white whitespace-pre-wrap break-words">
-              {post.content}
+              {getTruncatedContent(post.content, post.id)}
+              {shouldShowSeeMore(post.content) && (
+                <button
+                  onClick={() => togglePostExpansion(post.id)}
+                  className="ml-2 text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 flex items-center space-x-1"
+                >
+                  {expandedPosts[post.id] ? (
+                    <>
+                      <span>Show less</span>
+                      <ChevronUp className="h-4 w-4" />
+                    </>
+                  ) : (
+                    <>
+                      <span>See more</span>
+                      <ChevronDown className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
             {/* Post Media */}
