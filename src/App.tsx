@@ -44,14 +44,14 @@ function App() {
 
       {/* Desktop Layout - Only visible on md and up */}
       <div className="hidden md:flex justify-center w-full flex-1">
-        <div className="flex max-w-6xl mx-auto flex-1">
+        <div className="flex max-w-7xl mx-auto flex-1">
           {/* Sidebar (not fixed) */}
           <div className="hidden md:block md:w-[275px] bg-white dark:bg-black">
             <Sidebar />
           </div>
 
           {/* Main Content - Centered Feed */}
-          <div className="flex-1 max-w-[600px] w-full border-x border-gray-200 dark:border-gray-800 flex flex-col min-h-screen">
+          <div className="flex-1 max-w-[800px] w-full border-x border-gray-200 dark:border-gray-800 flex flex-col min-h-screen">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/notifications" element={<Notifications />} />
