@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, query, where, getDoc, doc, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { CheckCircle, ArrowRight, Play } from 'lucide-react';
@@ -68,7 +68,7 @@ export function Courses() {
       const courseData = courseDoc.data();
 
       // Create order
-      const response = await fetch('https://us-central1-lazy-job-seeker-4b29b.cloudfunctions.net/createRazorpayOrder', {
+      const response = await fetch('https://asia-south1-mydatabase-10917.cloudfunctions.net/createRazorpayOrderFunction', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -86,7 +86,10 @@ export function Courses() {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to create order');
+      if (!response.ok) {
+        console.error('Failed to create order:', data);
+        throw new Error(data.error || 'Failed to create order');
+      }
 
       // Initialize Razorpay
       const options = {
@@ -99,7 +102,7 @@ export function Courses() {
         handler: async function (response: any) {
           try {
             // Verify payment
-            const verifyResponse = await fetch('https://us-central1-lazy-job-seeker-4b29b.cloudfunctions.net/verifyRazorpayPayment', {
+            const verifyResponse = await fetch('https://asia-south1-mydatabase-10917.cloudfunctions.net/verifyRazorpayPaymentFunction', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
@@ -112,7 +115,21 @@ export function Courses() {
             });
 
             const verifyData = await verifyResponse.json();
-            if (!verifyResponse.ok) throw new Error(verifyData.error || 'Payment verification failed');
+            if (!verifyResponse.ok) {
+              console.error('Payment verification failed:', verifyData);
+              throw new Error(verifyData.error || 'Payment verification failed');
+            }
+
+            // Add enrollment to Firestore
+            await addDoc(collection(db, 'enrollments'), {
+              studentId: currentUser.uid,
+              courseId,
+              enrolledAt: new Date(),
+              paymentDetails: {
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id
+              }
+            });
 
             // Update UI
             setEnrolledCourses(prev => [...prev, courseId]);

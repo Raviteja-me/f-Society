@@ -6,9 +6,9 @@ admin.initializeApp();
 
 // Initialize CORS middleware
 export const corsMiddleware = cors({ 
-  origin: ['https://fsociety.today', 'http://localhost:3000'],
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: true, // Allow all origins for now
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true
 });
 

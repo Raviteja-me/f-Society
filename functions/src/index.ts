@@ -1,10 +1,10 @@
 import * as functions from 'firebase-functions';
-import { initializeApp } from 'firebase-admin/app';
+// import { initializeApp } from 'firebase-admin/app';
 import { registerStudent, updateStudentApiKey } from './student';
 import { createRazorpayOrder, verifyRazorpayPayment } from './razorpay';
 
 // Initialize Firebase Admin
-initializeApp();
+// initializeApp();
 
 export const registerStudentFunction = functions.https.onRequest({
   memory: '256MiB',

@@ -25,11 +25,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyRazorpayPaymentFunction = exports.createRazorpayOrderFunction = exports.updateStudentApiKeyFunction = exports.registerStudentFunction = void 0;
 const functions = __importStar(require("firebase-functions"));
-const app_1 = require("firebase-admin/app");
+// import { initializeApp } from 'firebase-admin/app';
 const student_1 = require("./student");
 const razorpay_1 = require("./razorpay");
 // Initialize Firebase Admin
-(0, app_1.initializeApp)();
+// initializeApp();
 exports.registerStudentFunction = functions.https.onRequest({
     memory: '256MiB',
     region: 'asia-south1'
