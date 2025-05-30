@@ -1,12 +1,18 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
-import * as functions from 'firebase-functions';
 import { Request, Response } from 'express';
 import { corsMiddleware } from './config';
 
 export const createRazorpayOrder = async (req: Request, res: Response) => {
   // Apply CORS middleware
   return corsMiddleware(req, res, async () => {
+    // Get environment variables at runtime
+    const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
+    const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
+    if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+      console.error('Missing required environment variables: RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET');
+      return res.status(500).json({ error: 'Missing required environment variables: RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET' });
+    }
     try {
       console.log('Creating Razorpay order with data:', req.body);
       
@@ -20,8 +26,8 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
       }
 
       const razorpay = new Razorpay({
-        key_id: functions.config().razorpay.key_id,
-        key_secret: functions.config().razorpay.key_secret
+        key_id: RAZORPAY_KEY_ID,
+        key_secret: RAZORPAY_KEY_SECRET
       });
 
       console.log('Initializing Razorpay order creation...');
@@ -52,6 +58,12 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
 export const verifyRazorpayPayment = async (req: Request, res: Response) => {
   // Apply CORS middleware
   return corsMiddleware(req, res, async () => {
+    // Get environment variables at runtime
+    const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
+    if (!RAZORPAY_KEY_SECRET) {
+      console.error('Missing required environment variable: RAZORPAY_KEY_SECRET');
+      return res.status(500).json({ error: 'Missing required environment variable: RAZORPAY_KEY_SECRET' });
+    }
     try {
       console.log('Verifying Razorpay payment with data:', req.body);
       
@@ -65,7 +77,7 @@ export const verifyRazorpayPayment = async (req: Request, res: Response) => {
       }
 
       const expectedSignature = crypto
-        .createHmac('sha256', functions.config().razorpay.key_secret)
+        .createHmac('sha256', RAZORPAY_KEY_SECRET)
         .update(razorpay_order_id + '|' + razorpay_payment_id)
         .digest('hex');
 

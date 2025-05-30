@@ -8,28 +8,32 @@ import { createRazorpayOrder, verifyRazorpayPayment } from './razorpay';
 
 export const registerStudentFunction = functions.https.onRequest({
   memory: '256MiB',
-  region: 'asia-south1'
+  region: 'asia-south1',
+  secrets: ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET']
 }, (req, res) => {
   registerStudent(req, res);
 });
 
 export const updateStudentApiKeyFunction = functions.https.onRequest({
   memory: '256MiB',
-  region: 'asia-south1'
+  region: 'asia-south1',
+  secrets: ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET']
 }, (req, res) => {
   updateStudentApiKey(req, res);
 });
 
 export const createRazorpayOrderFunction = functions.https.onRequest({
   memory: '256MiB',
-  region: 'asia-south1'
+  region: 'asia-south1',
+  secrets: ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET']
 }, (req, res) => {
   createRazorpayOrder(req, res);
 });
 
 export const verifyRazorpayPaymentFunction = functions.https.onRequest({
   memory: '256MiB',
-  region: 'asia-south1'
+  region: 'asia-south1',
+  secrets: ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET']
 }, (req, res) => {
   verifyRazorpayPayment(req, res);
 }); 

@@ -76,7 +76,7 @@ export function Courses() {
         body: JSON.stringify({
           amount: courseData.price,
           currency: 'INR',
-          receipt: `course_${courseId}_${currentUser.uid}_${Date.now()}`,
+          receipt: `${courseId}_${Date.now()}`,
           notes: {
             courseId,
             studentId: currentUser.uid,
