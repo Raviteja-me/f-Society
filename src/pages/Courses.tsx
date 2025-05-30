@@ -75,8 +75,13 @@ export function Courses() {
         },
         body: JSON.stringify({
           amount: courseData.price,
-          courseId,
-          studentId: currentUser.uid
+          currency: 'INR',
+          receipt: `course_${courseId}_${currentUser.uid}_${Date.now()}`,
+          notes: {
+            courseId,
+            studentId: currentUser.uid,
+            courseTitle: courseData.title
+          }
         })
       });
 
@@ -100,11 +105,9 @@ export function Courses() {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                orderId: response.razorpay_order_id,
-                paymentId: response.razorpay_payment_id,
-                signature: response.razorpay_signature,
-                courseId,
-                studentId: currentUser.uid
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
               })
             });
 

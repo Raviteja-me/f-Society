@@ -1,102 +1,53 @@
-import { onRequest } from 'firebase-functions/v2/https';
-import * as admin from 'firebase-admin';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import * as functions from 'firebase-functions';
+import { Request, Response } from 'express';
 
-const razorpay = new Razorpay({
-  key_id: functions.config().razorpay.key_id,
-  key_secret: functions.config().razorpay.key_secret
-});
-
-// Create Razorpay Order
-export const createRazorpayOrder = onRequest({ cors: true }, async (req, res) => {
+export const createRazorpayOrder = async (req: Request, res: Response) => {
   try {
-    const { amount, currency = 'INR', courseId, studentId } = req.body;
-
-    if (!amount || !courseId || !studentId) {
-      res.status(400).json({ error: 'Missing required fields' });
-      return;
+    const { amount, currency, receipt, notes } = req.body;
+    if (!amount || !currency || !receipt) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
-
-    // Create order in Razorpay
+    const razorpay = new Razorpay({
+      key_id: functions.config().razorpay.key_id,
+      key_secret: functions.config().razorpay.key_secret
+    });
     const order = await razorpay.orders.create({
-      amount: amount * 100, // Razorpay expects amount in paise
+      amount: amount * 100, // Convert to paise
       currency,
-      receipt: `course_${courseId}_${studentId}`,
-      notes: {
-        courseId,
-        studentId
-      }
+      receipt,
+      notes
     });
-
-    // Store order details in Firestore
-    await admin.firestore().collection('orders').doc(order.id).set({
-      courseId,
-      studentId,
-      amount,
-      currency,
-      status: 'created',
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    res.json({
+    return res.status(200).json({
+      success: true,
       orderId: order.id,
       amount: order.amount,
       currency: order.currency
     });
-  } catch (error) {
-    console.error('Error creating order:', error);
-    res.status(500).json({ error: 'Failed to create order' });
+  } catch (error: any) {
+    return res.status(500).json({ error: `Failed to create order: ${error.message}` });
   }
-});
+};
 
-// Verify Payment
-export const verifyRazorpayPayment = onRequest({ cors: true }, async (req, res) => {
+export const verifyRazorpayPayment = async (req: Request, res: Response) => {
   try {
-    const { orderId, paymentId, signature, courseId, studentId } = req.body;
-
-    if (!orderId || !paymentId || !signature || !courseId || !studentId) {
-      res.status(400).json({ error: 'Missing required fields' });
-      return;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
-
-    // Verify signature
-    const body = orderId + "|" + paymentId;
     const expectedSignature = crypto
       .createHmac('sha256', functions.config().razorpay.key_secret)
-      .update(body.toString())
+      .update(razorpay_order_id + '|' + razorpay_payment_id)
       .digest('hex');
-
-    if (expectedSignature !== signature) {
-      res.status(400).json({ error: 'Invalid signature' });
-      return;
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ error: 'Invalid signature' });
     }
-
-    // Update order status
-    await admin.firestore().collection('orders').doc(orderId).update({
-      status: 'completed',
-      paymentId,
-      signature,
-      completedAt: admin.firestore.FieldValue.serverTimestamp()
+    return res.status(200).json({
+      success: true,
+      message: 'Payment verified successfully'
     });
-
-    // Add course to user's enrollments
-    await admin.firestore().collection('enrollments').add({
-      courseId,
-      studentId,
-      orderId,
-      paymentId,
-      enrolledAt: admin.firestore.FieldValue.serverTimestamp(),
-      progress: 0
-    });
-
-    res.json({ 
-      status: 'success',
-      message: 'Payment verified and course enrolled'
-    });
-  } catch (error) {
-    console.error('Error verifying payment:', error);
-    res.status(500).json({ error: 'Failed to verify payment' });
+  } catch (error: any) {
+    return res.status(500).json({ error: `Payment verification failed: ${error.message}` });
   }
-}); 
+}; 
