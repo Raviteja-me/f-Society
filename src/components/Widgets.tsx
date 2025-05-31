@@ -9,6 +9,7 @@ export function Widgets() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -28,6 +29,52 @@ export function Widgets() {
 
     checkAdminStatus();
   }, [currentUser]);
+
+  useEffect(() => {
+    const highlightText = () => {
+      // Remove existing highlights
+      const existingHighlights = document.querySelectorAll('.search-highlight');
+      existingHighlights.forEach(el => {
+        const parent = el.parentNode;
+        if (parent) {
+          parent.replaceChild(document.createTextNode(el.textContent || ''), el);
+        }
+      });
+
+      if (!searchQuery.trim()) return;
+
+      // Get all text nodes in the main content
+      const walker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT,
+        null
+      );
+
+      const nodesToHighlight = [];
+      let node;
+      while (node = walker.nextNode()) {
+        if (node.textContent?.toLowerCase().includes(searchQuery.toLowerCase())) {
+          nodesToHighlight.push(node);
+        }
+      }
+
+      // Highlight matching text
+      nodesToHighlight.forEach(node => {
+        const text = node.textContent || '';
+        const regex = new RegExp(`(${searchQuery})`, 'gi');
+        const newText = text.replace(regex, '<span class="search-highlight bg-yellow-500/50 text-black px-0.5 rounded">$1</span>');
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = newText;
+        
+        while (tempDiv.firstChild) {
+          node.parentNode?.insertBefore(tempDiv.firstChild, node);
+        }
+        node.parentNode?.removeChild(node);
+      });
+    };
+
+    highlightText();
+  }, [searchQuery]);
 
   const suggestions = [
     { 
@@ -52,24 +99,26 @@ export function Widgets() {
 
   return (
     <div className="w-80 p-4 space-y-4">
-      <div className="sticky top-0 pt-2 bg-white dark:bg-black">
+      <div className="sticky top-0 pt-2 bg-transparent">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search"
-            className="w-full bg-gray-100 dark:bg-gray-800 rounded-full py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-700 dark:text-white transition-colors"
+            placeholder="Search on page..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-gray-900/30 backdrop-blur-sm border border-gray-800/30 rounded-full py-3 pl-12 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300"
           />
         </div>
       </div>
 
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+      <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/30 rounded-xl p-4 hover:shadow-xl transition-all duration-300">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold dark:text-white">Who to follow</h2>
+          <h2 className="text-xl font-bold text-white">Who to follow</h2>
           {isAdmin && (
             <button
               onClick={() => navigate('/dashboard')}
-              className="px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-bold hover:bg-gray-800 transition"
+              className="px-4 py-2 bg-gray-800/50 text-white rounded-full text-sm font-bold hover:bg-gray-800/70 transition-all duration-300"
             >
               Dashboard
             </button>
@@ -79,19 +128,19 @@ export function Widgets() {
           {suggestions.map((suggestion) => (
             <div 
               key={suggestion.handle} 
-              className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+              className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-800/30 cursor-pointer transition-all duration-300"
               onClick={() => handleRedirect(suggestion.redirectUrl)}
             >
               <div className="flex items-center space-x-3">
                 <img src={suggestion.avatar} alt={suggestion.name} className="h-12 w-12 rounded-full" />
                 <div>
                   <div className="flex items-center space-x-1">
-                    <p className="font-bold dark:text-white">{suggestion.name}</p>
+                    <p className="font-bold text-white">{suggestion.name}</p>
                     {suggestion.isPremium && (
-                      <span className="text-xs bg-gray-900 text-white px-2 py-0.5 rounded-full">PRO</span>
+                      <span className="text-xs bg-blue-500/50 text-white px-2 py-0.5 rounded-full">PRO</span>
                     )}
                   </div>
-                  <p className="text-gray-500 dark:text-gray-400">{suggestion.handle}</p>
+                  <p className="text-gray-400">{suggestion.handle}</p>
                 </div>
               </div>
             </div>

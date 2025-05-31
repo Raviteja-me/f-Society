@@ -183,7 +183,7 @@ export function CourseView() {
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-400">
-                Class {currentClassIndex + 1} of {course.classes.length}
+                {currentClassIndex + 1}/{course.classes.length}
               </span>
               <div className="flex items-center space-x-2">
                 <button
@@ -260,7 +260,7 @@ export function CourseView() {
           {/* Sidebar */}
           <div className="lg:col-span-4 space-y-6">
             {/* Course Progress */}
-            <div className="bg-gray-900/50 rounded-xl border border-gray-800/50 p-6 hover:shadow-xl transition-all duration-300">
+            <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl border border-gray-800/30 p-6 hover:shadow-xl transition-all duration-300">
               <h3 className="text-lg font-medium mb-4 text-white">Course Progress</h3>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
@@ -269,9 +269,9 @@ export function CourseView() {
                     {Math.round(((currentClassIndex + 1) / course.classes.length) * 100)}%
                   </span>
                 </div>
-                <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-800/50 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                    className="h-full bg-blue-500/70 rounded-full transition-all duration-300"
                     style={{ width: `${((currentClassIndex + 1) / course.classes.length) * 100}%` }}
                   />
                 </div>
@@ -279,7 +279,7 @@ export function CourseView() {
             </div>
 
             {/* Course Navigation */}
-            <div className="bg-gray-900/50 rounded-xl border border-gray-800/50 p-6 hover:shadow-xl transition-all duration-300">
+            <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl border border-gray-800/30 p-6 hover:shadow-xl transition-all duration-300">
               <h3 className="text-lg font-medium mb-4 text-white">Course Navigation</h3>
               <div className="space-y-2">
                 {course.classes.map((courseClass, index) => (
@@ -289,14 +289,14 @@ export function CourseView() {
                     className={`w-full text-left p-3 rounded-lg transition-all duration-300 ${
                       index === currentClassIndex
                         ? 'bg-blue-500/20 text-blue-400 shadow-lg'
-                        : 'text-gray-400 hover:bg-gray-800/50 hover:text-white hover:shadow-md'
+                        : 'text-gray-400 hover:bg-gray-800/30 hover:text-white hover:shadow-md'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
                         index === currentClassIndex
-                          ? 'bg-blue-500 text-white scale-110'
-                          : 'bg-gray-700 text-gray-400'
+                          ? 'bg-blue-500/70 text-white scale-110'
+                          : 'bg-gray-700/50 text-gray-400'
                       }`}>
                         {index + 1}
                       </div>
