@@ -196,16 +196,16 @@ export function API() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Mobile Header */}
-      <div className="md:hidden sticky top-0 z-10 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
-        <h1 className="text-xl font-bold p-4 dark:text-white">API Access</h1>
+      <div className="md:hidden sticky top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
+        <h1 className="text-xl font-bold p-4 text-gray-900 dark:text-white">API Access</h1>
       </div>
 
       <div className="flex-1 flex flex-col p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <div className="bg-red-100 dark:bg-red-900/50 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-200 px-4 py-3 rounded mb-4">
               {error}
             </div>
           )}
@@ -214,7 +214,7 @@ export function API() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold dark:text-white">{studentData.name}</h2>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{studentData.name}</h2>
                   <p className="text-gray-600 dark:text-gray-300">{studentData.email}</p>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -224,36 +224,36 @@ export function API() {
                   {studentData.status === 'pending' && (
                     <AlertCircle className="h-6 w-6 text-yellow-500" />
                   )}
-                  <span className="capitalize dark:text-white">{studentData.status}</span>
+                  <span className="capitalize text-gray-900 dark:text-white">{studentData.status}</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                <div className="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
                   <div className="flex items-center space-x-2 mb-2">
                     <Shield className="h-5 w-5 text-blue-500" />
-                    <span className="font-medium dark:text-white">PAN Number</span>
+                    <span className="font-medium text-gray-900 dark:text-white">PAN Number</span>
                   </div>
                   <p className="text-gray-600 dark:text-gray-300">{studentData.pan}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                <div className="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
                   <div className="flex items-center space-x-2 mb-2">
                     <CreditCard className="h-5 w-5 text-blue-500" />
-                    <span className="font-medium dark:text-white">UPI ID</span>
+                    <span className="font-medium text-gray-900 dark:text-white">UPI ID</span>
                   </div>
                   <p className="text-gray-600 dark:text-gray-300">{studentData.upi}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                <div className="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
                   <div className="flex items-center space-x-2 mb-2">
                     <Shield className="h-5 w-5 text-blue-500" />
-                    <span className="font-medium dark:text-white">Aadhaar Number</span>
+                    <span className="font-medium text-gray-900 dark:text-white">Aadhaar Number</span>
                   </div>
                   <p className="text-gray-600 dark:text-gray-300">{studentData.aadhaar}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                <div className="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
                   <div className="flex items-center space-x-2 mb-2">
                     <Banknote className="h-5 w-5 text-blue-500" />
-                    <span className="font-medium dark:text-white">Bank Details</span>
+                    <span className="font-medium text-gray-900 dark:text-white">Bank Details</span>
                   </div>
                   <p className="text-gray-600 dark:text-gray-300">
                     {studentData.bankDetails.accountHolderName}<br />
@@ -274,7 +274,7 @@ export function API() {
                         type="text"
                         value={studentData.apiKey}
                         readOnly
-                        className="flex-1 p-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="flex-1 p-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                       <button
                         onClick={handleCopyApiKey}
@@ -294,7 +294,7 @@ export function API() {
           ) : (
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-xl font-semibold mb-4 dark:text-white">Get API Access</h2>
+                <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Get API Access</h2>
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
                   Complete the verification process to get your API access.
                 </p>
@@ -310,7 +310,7 @@ export function API() {
                       type="text"
                       value={formData.pan}
                       onChange={(e) => setFormData(prev => ({ ...prev, pan: e.target.value }))}
-                      className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="w-full p-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required
                     />
                   </div>
@@ -322,7 +322,7 @@ export function API() {
                       type="text"
                       value={formData.upi}
                       onChange={(e) => setFormData(prev => ({ ...prev, upi: e.target.value }))}
-                      className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="w-full p-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required
                     />
                   </div>
@@ -334,14 +334,14 @@ export function API() {
                       type="text"
                       value={formData.aadhaar}
                       onChange={(e) => setFormData(prev => ({ ...prev, aadhaar: e.target.value }))}
-                      className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="w-full p-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium dark:text-white">Bank Details</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Bank Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -354,7 +354,7 @@ export function API() {
                           ...prev,
                           bankDetails: { ...prev.bankDetails, accountHolderName: e.target.value }
                         }))}
-                        className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="w-full p-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         required
                       />
                     </div>
@@ -369,7 +369,7 @@ export function API() {
                           ...prev,
                           bankDetails: { ...prev.bankDetails, accountNumber: e.target.value }
                         }))}
-                        className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="w-full p-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         required
                       />
                     </div>
@@ -384,7 +384,7 @@ export function API() {
                           ...prev,
                           bankDetails: { ...prev.bankDetails, ifscCode: e.target.value }
                         }))}
-                        className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="w-full p-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         required
                       />
                     </div>
@@ -392,7 +392,7 @@ export function API() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium dark:text-white">Documents</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Documents</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -401,7 +401,7 @@ export function API() {
                       <input
                         type="file"
                         onChange={(e) => handleFileChange('panImage', e.target.files?.[0] || null)}
-                        className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="w-full p-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         accept="image/*"
                         required
                       />
@@ -413,7 +413,7 @@ export function API() {
                       <input
                         type="file"
                         onChange={(e) => handleFileChange('aadhaarFront', e.target.files?.[0] || null)}
-                        className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="w-full p-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         accept="image/*"
                         required
                       />
@@ -425,7 +425,7 @@ export function API() {
                       <input
                         type="file"
                         onChange={(e) => handleFileChange('aadhaarBack', e.target.files?.[0] || null)}
-                        className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="w-full p-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         accept="image/*"
                         required
                       />

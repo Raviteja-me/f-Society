@@ -280,9 +280,9 @@ export function Community() {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-transparent">
-      <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-gray-800">
-        <h1 className="text-xl font-bold p-4 text-white">Community</h1>
+    <div className="flex-1 flex flex-col bg-white dark:bg-black">
+      <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
+        <h1 className="text-xl font-bold p-4 text-gray-900 dark:text-white">Community</h1>
       </div>
 
       {error && (
@@ -293,38 +293,38 @@ export function Community() {
 
       <div className="max-w-2xl mx-auto w-full">
         {/* Community Introduction */}
-        <div className="p-4 bg-gray-900/30 backdrop-blur-sm rounded-2xl border border-gray-800/50 shadow-xl mb-6">
+        <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl mb-6">
           <div className="flex items-center space-x-4 mb-4">
             <div className="p-3 bg-blue-500/20 rounded-full">
-              <Users className="h-6 w-6 text-blue-400" />
+              <Users className="h-6 w-6 text-blue-500" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Welcome to FSociety Community</h2>
-              <p className="text-sm text-gray-400">Join the conversation with fellow learners</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Welcome to FSociety Community</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Join the conversation with fellow learners</p>
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="p-3 bg-gray-800/30 rounded-lg">
-              <div className="text-2xl font-bold text-white">{posts.length}</div>
-              <div className="text-sm text-gray-400">Posts</div>
+            <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{posts.length}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Posts</div>
             </div>
-            <div className="p-3 bg-gray-800/30 rounded-lg">
-              <div className="text-2xl font-bold text-white">
+            <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {posts.reduce((acc, post) => acc + post.stats.comments, 0)}
               </div>
-              <div className="text-sm text-gray-400">Comments</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Comments</div>
             </div>
-            <div className="p-3 bg-gray-800/30 rounded-lg">
-              <div className="text-2xl font-bold text-white">
+            <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {posts.reduce((acc, post) => acc + post.stats.likes, 0)}
               </div>
-              <div className="text-sm text-gray-400">Likes</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Likes</div>
             </div>
           </div>
         </div>
 
         {/* Create Post */}
-        <div className="bg-gray-900/30 backdrop-blur-sm rounded-2xl border border-gray-800/50 p-4 mb-6">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 mb-6">
           <div className="flex space-x-3">
             <img
               src={currentUser?.photoURL || 'https://via.placeholder.com/40'}
@@ -336,7 +336,7 @@ export function Community() {
                 value={newPostContent}
                 onChange={(e) => setNewPostContent(e.target.value)}
                 placeholder="What's on your mind?"
-                className="w-full h-20 p-2 border border-gray-700/50 rounded-lg bg-transparent text-white placeholder-gray-500 resize-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                className="w-full h-20 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 resize-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
                 disabled={posting}
               />
               
@@ -348,7 +348,7 @@ export function Community() {
                       fileInputRef.current?.click();
                     }}
                     className={`p-2 rounded-full ${
-                      mediaType === 'image' ? 'bg-blue-500/20 text-blue-400' : 'text-gray-400 hover:bg-gray-800/50'
+                      mediaType === 'image' ? 'bg-blue-500/20 text-blue-500' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
                   >
                     <ImageIcon className="h-5 w-5" />
@@ -360,7 +360,7 @@ export function Community() {
                       setMediaUrl('');
                     }}
                     className={`p-2 rounded-full ${
-                      mediaType === 'video' ? 'bg-blue-500/20 text-blue-400' : 'text-gray-400 hover:bg-gray-800/50'
+                      mediaType === 'video' ? 'bg-blue-500/20 text-blue-500' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
                   >
                     <Video className="h-5 w-5" />
@@ -371,7 +371,7 @@ export function Community() {
                       setMediaFile(null);
                     }}
                     className={`p-2 rounded-full ${
-                      mediaType === 'link' ? 'bg-blue-500/20 text-blue-400' : 'text-gray-400 hover:bg-gray-800/50'
+                      mediaType === 'link' ? 'bg-blue-500/20 text-blue-500' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
                   >
                     <LinkIcon className="h-5 w-5" />
@@ -387,7 +387,7 @@ export function Community() {
                 <button
                   onClick={handleCreatePost}
                   disabled={posting || !newPostContent.trim() || (mediaFile !== null && uploading)}
-                  className="px-4 py-2 bg-blue-500/80 text-white rounded-full hover:bg-blue-600/80 disabled:opacity-50 transition-colors flex items-center space-x-2"
+                  className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 transition-colors flex items-center space-x-2"
                 >
                   {posting ? (
                     <>
@@ -401,14 +401,14 @@ export function Community() {
               </div>
 
               {mediaFile && (
-                <div className="mt-2 p-2 bg-gray-800/30 rounded-lg border border-gray-700/50 flex items-center justify-between">
+                <div className="mt-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Upload className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm text-gray-300">{mediaFile.name}</span>
+                    <Upload className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{mediaFile.name}</span>
                   </div>
                   <button
                     onClick={() => setMediaFile(null)}
-                    className="p-1 rounded-full hover:bg-gray-700/50 text-gray-400 hover:text-white"
+                    className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -422,18 +422,18 @@ export function Community() {
                     value={mediaUrl}
                     onChange={(e) => setMediaUrl(e.target.value)}
                     placeholder={mediaType === 'video' ? "Enter video URL or upload a file" : "Enter URL"}
-                    className="w-full p-2 border border-gray-700/50 rounded-lg bg-transparent text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
                     disabled={posting}
                   />
                   {mediaType === 'video' && (
                     <div className="mt-2 flex items-center space-x-2">
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="px-3 py-1 text-sm bg-gray-800/50 text-gray-300 rounded-full hover:bg-gray-700/50 transition-colors"
+                        className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                       >
                         Upload Video
                       </button>
-                      <span className="text-xs text-gray-500">(Max 50MB)</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">(Max 50MB)</span>
                     </div>
                   )}
                 </div>
@@ -445,7 +445,7 @@ export function Community() {
         {/* Posts Feed */}
         <div className="space-y-4">
           {posts.map(post => (
-            <div key={post.id} className="bg-gray-900/30 backdrop-blur-sm rounded-2xl border border-gray-800/50 overflow-hidden">
+            <div key={post.id} className="bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="p-4">
                 <div className="flex space-x-3">
                   <img
@@ -455,13 +455,13 @@ export function Community() {
                   />
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium text-white">{post.authorName}</span>
-                      <span className="text-gray-400">·</span>
-                      <span className="text-sm text-gray-400">
+                      <span className="font-medium text-gray-900 dark:text-white">{post.authorName}</span>
+                      <span className="text-gray-500 dark:text-gray-400">·</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         {post.timestamp.toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-white mt-1">{post.content}</p>
+                    <p className="text-gray-900 dark:text-white mt-1">{post.content}</p>
 
                     {post.media && post.media.length > 0 && (
                       <div className="mt-3">
@@ -492,7 +492,7 @@ export function Community() {
                                 href={media.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-blue-400 hover:text-blue-300"
+                                className="text-blue-500 hover:text-blue-400"
                               >
                                 {media.url}
                               </a>
@@ -502,7 +502,7 @@ export function Community() {
                       </div>
                     )}
 
-                    <div className="flex items-center space-x-6 mt-3 text-gray-400">
+                    <div className="flex items-center space-x-6 mt-3 text-gray-500 dark:text-gray-400">
                       <button
                         onClick={() => handleLike(post.id)}
                         className={`flex items-center space-x-1 ${
@@ -512,11 +512,11 @@ export function Community() {
                         <Heart className="h-5 w-5" />
                         <span>{post.stats.likes}</span>
                       </button>
-                      <button className="flex items-center space-x-1 hover:text-blue-400">
+                      <button className="flex items-center space-x-1 hover:text-blue-500">
                         <MessageCircle className="h-5 w-5" />
                         <span>{post.stats.comments}</span>
                       </button>
-                      <button className="flex items-center space-x-1 hover:text-blue-400">
+                      <button className="flex items-center space-x-1 hover:text-blue-500">
                         <Share2 className="h-5 w-5" />
                         <span>{post.stats.shares}</span>
                       </button>
@@ -536,13 +536,13 @@ export function Community() {
                             value={commentText[post.id] || ''}
                             onChange={(e) => setCommentText({ ...commentText, [post.id]: e.target.value })}
                             placeholder="Write a comment..."
-                            className="w-full p-2 border border-gray-700/50 rounded-full bg-transparent text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                            className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
                           />
                         </div>
                         <button
                           onClick={() => handleComment(post.id)}
                           disabled={!commentText[post.id]?.trim()}
-                          className="px-4 py-2 bg-blue-500/80 text-white rounded-full hover:bg-blue-600/80 disabled:opacity-50 transition-colors"
+                          className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 transition-colors"
                         >
                           Comment
                         </button>
@@ -559,11 +559,11 @@ export function Community() {
                             }}
                           />
                           <div className="flex-1">
-                            <div className="bg-gray-800/50 rounded-2xl px-4 py-2">
-                              <p className="font-medium text-white">{comment.userName}</p>
-                              <p className="text-sm text-gray-300">{comment.content}</p>
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl px-4 py-2">
+                              <p className="font-medium text-gray-900 dark:text-white">{comment.userName}</p>
+                              <p className="text-sm text-gray-700 dark:text-gray-300">{comment.content}</p>
                             </div>
-                            <p className="text-xs text-gray-500 mt-1 ml-4">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-4">
                               {comment.timestamp.toLocaleDateString()}
                             </p>
                           </div>

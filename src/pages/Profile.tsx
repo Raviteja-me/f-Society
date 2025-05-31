@@ -134,6 +134,9 @@ export function Profile() {
 
   return (
     <div className="flex-1 flex flex-col p-4 bg-transparent">
+      <div className="sticky top-16 md:top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
+        <h1 className="text-xl font-bold p-4 text-gray-900 dark:text-white">Profile</h1>
+      </div>
       <div className="max-w-2xl mx-auto w-full">
         <div className="bg-gray-900/30 backdrop-blur-sm rounded-2xl border border-gray-800/50 shadow-xl overflow-hidden">
           {/* Profile Header with Cover Image */}
