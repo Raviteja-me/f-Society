@@ -182,11 +182,11 @@ export function Courses() {
   }
 
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="sticky top-0 z-10 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+    <div className="flex-1 flex flex-col bg-transparent">
+      <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-gray-800">
         <div className="max-w-2xl mx-auto px-4">
           <div className="flex justify-between items-center py-3">
-            <h1 className="text-xl font-bold dark:text-white">Courses</h1>
+            <h1 className="text-xl font-bold text-white">Courses</h1>
             <div className="flex space-x-1">
               {(['all', 'web', 'mobile', 'mind'] as const).map((category) => (
                 <button
@@ -195,7 +195,7 @@ export function Courses() {
                   className={`px-3 py-1 text-sm rounded-full ${
                     selectedCategory === category
                       ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                   }`}
                 >
                   {category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1)}
@@ -208,39 +208,39 @@ export function Courses() {
 
       <div className="max-w-2xl mx-auto px-4 py-6">
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">{error}</div>
+          <div className="mb-4 p-3 bg-red-900/50 border border-red-800 text-red-200 rounded-lg text-sm">{error}</div>
         )}
 
         <div className="space-y-4">
           {filteredCourses.map((course) => (
             <div
               key={course.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+              className="bg-gray-900/50 rounded-lg border border-gray-800 overflow-hidden hover:bg-gray-900/70 transition-colors"
             >
               <div className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold mb-1 dark:text-white">{course.title}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{course.description}</p>
+                    <h3 className="text-lg font-semibold mb-1 text-white">{course.title}</h3>
+                    <p className="text-sm text-gray-400 mb-3">{course.description}</p>
 
                     <div className="space-y-1 mb-3">
                       {course.features.map((feature, index) => (
                         <div key={index} className="flex items-center space-x-2">
                           <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span className="text-sm text-gray-700 dark:text-gray-300">{feature}</span>
+                          <span className="text-sm text-gray-300">{feature}</span>
                         </div>
                       ))}
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-lg font-bold text-blue-500">₹{course.price}</span>
+                        <span className="text-lg font-bold text-blue-400">₹{course.price}</span>
                         {course.originalPrice && (
                           <span className="ml-2 text-sm text-gray-500 line-through">₹{course.originalPrice}</span>
                         )}
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs">
+                        <span className="px-2 py-1 bg-gray-800 rounded-full text-xs text-gray-300">
                           {course.category} - {course.level}
                         </span>
                         {enrolledCourses.includes(course.id) ? (

@@ -4,7 +4,7 @@ import { Home } from './pages/Home';
 
 import { Notifications } from './pages/Notifications';
 
-import { Communities } from './pages/Communities';
+import { Community } from './pages/Communities';
 import { Profile } from './pages/Profile';
 import { API } from './pages/API';
 import { Courses } from './pages/Courses';
@@ -26,7 +26,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/notifications" element={<Notifications />} />
-          <Route path="/communities" element={<Communities />} />
+          <Route path="/communities" element={<Community />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/course/:courseId" element={<CourseView />} />
           <Route path="/profile" element={<Profile />} />
@@ -55,7 +55,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/notifications" element={<Notifications />} />
-              <Route path="/communities" element={<Communities />} />
+              <Route path="/communities" element={<Community />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/course/:courseId" element={<CourseView />} />
               <Route path="/profile" element={<Profile />} />

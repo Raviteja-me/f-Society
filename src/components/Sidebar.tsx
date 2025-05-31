@@ -19,7 +19,7 @@ export function Sidebar() {
     { icon: Home, text: 'Home', path: '/' },
     { icon: Bell, text: 'Notifications', path: '/notifications' },
     { icon: BookOpen, text: 'Courses', path: '/courses' },
-    { icon: Users, text: 'Communities', path: '/communities' },
+    { icon: Users, text: 'Community', path: '/communities' },
     { icon: User, text: 'Profile', path: '/profile' }
   ];
 

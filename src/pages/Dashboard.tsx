@@ -138,17 +138,17 @@ export function Dashboard() {
   }
 
   return (
-    <div className="flex-1 flex flex-col p-4">
-      <h1 className="text-2xl font-bold mb-6 dark:text-white">Admin Dashboard</h1>
+    <div className="flex-1 flex flex-col bg-transparent">
+      <h1 className="text-2xl font-bold mb-6 text-white">Admin Dashboard</h1>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-900/50 border border-red-800 text-red-200 px-4 py-3 rounded mb-4">
           {error}
         </div>
       )}
 
       <div className="mb-6">
-        <div className="border-b border-gray-200 dark:border-gray-700">
+        <div className="border-b border-gray-800">
           <nav className="-mb-px flex space-x-8">
             {(['students', 'payments', 'users', 'posts', 'courses'] as DashboardTab[]).map((tab) => (
               <button
@@ -156,8 +156,8 @@ export function Dashboard() {
                 onClick={() => setActiveTab(tab)}
                 className={`${
                   activeTab === tab
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    ? 'border-blue-500 text-blue-400'
+                    : 'border-transparent text-gray-400 hover:text-gray-300'
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize`}
               >
                 {tab}
