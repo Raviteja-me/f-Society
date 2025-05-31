@@ -137,7 +137,7 @@ export function Profile() {
       <div className="sticky top-16 md:top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
         <h1 className="text-xl font-bold p-4 text-gray-900 dark:text-white">Profile</h1>
       </div>
-      <div className="max-w-2xl mx-auto w-full">
+      <div className="max-w-2xl mx-auto w-full pt-[calc(2rem+2rem)] md:pt-0">
         <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
           {/* Profile Header with Cover Image */}
           <div className="h-32 bg-gradient-to-r from-blue-500/20 to-purple-500/20 relative flex items-center justify-center">

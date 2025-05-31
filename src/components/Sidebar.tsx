@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Bell, BookOpen, Users,  User, LogOut, Menu, X, LayoutDashboard } from 'lucide-react';
+import { Home, BookOpen, User, LogOut, Menu, X, LayoutDashboard, Grid } from 'lucide-react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { Link } from './Link';
 import { ThemeToggle } from './ThemeToggle';
@@ -17,9 +17,8 @@ export function Sidebar() {
 
   const menuItems = [
     { icon: Home, text: 'Home', path: '/' },
-    { icon: Bell, text: 'Notifications', path: '/notifications' },
     { icon: BookOpen, text: 'Courses', path: '/courses' },
-    { icon: Users, text: 'Community', path: '/communities' },
+    { icon: Grid, text: 'Apps', path: '/apps' },
     { icon: User, text: 'Profile', path: '/profile' }
   ];
 

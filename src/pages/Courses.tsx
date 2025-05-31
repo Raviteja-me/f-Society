@@ -13,7 +13,7 @@ export function Courses() {
   const [error, setError] = useState('');
   const [courses, setCourses] = useState<Course[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'web' | 'mobile' | 'mind'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'web' | 'mobile' | 'mind' | 'my'>('all');
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -171,7 +171,7 @@ export function Courses() {
   };
 
   const filteredCourses =
-    selectedCategory === 'all' ? courses : courses.filter((course) => course.category === selectedCategory);
+    selectedCategory === 'all' ? courses : courses.filter((course) => enrolledCourses.includes(course.id));
 
   if (loading) {
     return (
@@ -188,7 +188,7 @@ export function Courses() {
           <div className="flex justify-between items-center py-3">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">Courses</h1>
             <div className="flex space-x-1">
-              {(['all', 'web', 'mobile', 'mind'] as const).map((category) => (
+              {(['all', 'my'] as const).map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
@@ -198,7 +198,7 @@ export function Courses() {
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                   }`}
                 >
-                  {category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1)}
+                  {category === 'all' ? 'All' : 'My Courses'}
                 </button>
               ))}
             </div>
@@ -206,9 +206,15 @@ export function Courses() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="max-w-2xl mx-auto px-4 py-6 pt-[calc(2rem+4rem)] md:pt-6">
         {error && (
           <div className="mb-4 p-3 bg-red-900/50 border border-red-800 text-red-200 rounded-lg text-sm">{error}</div>
+        )}
+
+        {selectedCategory === 'my' && filteredCourses.length === 0 && !loading && (
+          <div className="p-4 text-center text-gray-600 dark:text-gray-400">
+            You are not enrolled in any courses yet.
+          </div>
         )}
 
         <div className="space-y-4">

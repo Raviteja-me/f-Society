@@ -1,4 +1,4 @@
-import { useAuth } from '../context/AuthContext';
+// import { useAuth } from '../context/AuthContext'; // Removed as it's no longer used
 // import { collection, addDoc, getDocs, query, where } from 'firebase/firestore'; // Removed Firebase imports
 // import { db } from '../firebase'; // Removed Firebase imports
 import {

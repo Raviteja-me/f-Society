@@ -15,6 +15,7 @@ import { db } from '../firebase.ts';
 import { MessageCircle, Heart, Share, ThumbsUp, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { FileText } from 'lucide-react';
+import { AuthModal } from './Auth';
 
 interface Media {
   type: 'image' | 'video' | 'file';
@@ -56,6 +57,11 @@ export function Feed() {
   const [activeCommentPost, setActiveCommentPost] = useState<string | null>(null);
   const [expandedPosts, setExpandedPosts] = useState<{ [key: string]: boolean }>({});
   const { currentUser } = useAuth();
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [intendedAction, setIntendedAction] = useState<{
+    type: 'comment' | 'like' | 'share';
+    postId?: string;
+  } | null>(null);
 
   useEffect(() => {
     const initializePosts = async () => {
@@ -87,17 +93,27 @@ export function Feed() {
     initializePosts();
   }, []);
 
+  const handleAuthRequired = (action: 'comment' | 'like' | 'share', postId?: string) => {
+    if (!currentUser) {
+      setIntendedAction({ type: action, postId });
+      setIsAuthOpen(true);
+      return false;
+    }
+    return true;
+  };
+
   const handleComment = async (postId: string) => {
-    if (!currentUser || !commentText.trim()) return;
+    if (!handleAuthRequired('comment', postId)) return;
+    if (!commentText.trim()) return;
 
     try {
       const newComment: Comment = {
         id: crypto.randomUUID(),
-        uid: currentUser.uid,
+        uid: currentUser!.uid,
         text: commentText.trim(),
         timestamp: new Date().toISOString(),
-        userDisplayName: currentUser.displayName || 'Anonymous',
-        userPhotoURL: currentUser.photoURL || '',
+        userDisplayName: currentUser!.displayName || 'Anonymous',
+        userPhotoURL: currentUser!.photoURL || '',
         createdAt: new Date().toISOString(),
         likes: []
       };
@@ -125,19 +141,19 @@ export function Feed() {
   };
 
   const handleLike = async (postId: string) => {
-    if (!currentUser?.uid) return;
+    if (!handleAuthRequired('like', postId)) return;
 
     try {
       const postRef = doc(db, 'posts', postId);
       const post = posts.find(p => p.id === postId);
       if (!post) return;
       
-      const hasLiked = post.likes?.includes(currentUser.uid);
+      const hasLiked = post.likes?.includes(currentUser!.uid);
 
       await updateDoc(postRef, {
         likes: hasLiked
-          ? arrayRemove(currentUser.uid)
-          : arrayUnion(currentUser.uid)
+          ? arrayRemove(currentUser!.uid)
+          : arrayUnion(currentUser!.uid)
       });
     } catch (error) {
       console.error('Error updating like:', error);
@@ -145,6 +161,8 @@ export function Feed() {
   };
 
   const handleShare = async (post: Post) => {
+    if (!handleAuthRequired('share')) return;
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -164,7 +182,7 @@ export function Feed() {
   };
 
   const handleCommentLike = async (postId: string, commentId: string) => {
-    if (!currentUser) return;
+    if (!handleAuthRequired('like')) return;
 
     const postRef = doc(db, 'posts', postId);
     const postDoc = await getDoc(postRef);
@@ -179,7 +197,7 @@ export function Feed() {
       return;
     }
 
-    const hasLikedComment = comment.likes?.includes(currentUser.uid);
+    const hasLikedComment = comment.likes?.includes(currentUser!.uid);
 
     await updateDoc(postRef, {
       comments: postDoc.data().comments.map((c: Comment) => {
@@ -187,8 +205,8 @@ export function Feed() {
           return {
             ...c,
             likes: hasLikedComment
-              ? c.likes.filter((uid: string) => uid !== currentUser.uid)
-              : [...(c.likes || []), currentUser.uid]
+              ? c.likes.filter((uid: string) => uid !== currentUser!.uid)
+              : [...(c.likes || []), currentUser!.uid]
           };
         }
         return c;
@@ -306,7 +324,11 @@ export function Feed() {
             {/* Post Actions */}
             <div className="flex items-center justify-around pt-2 border-t border-gray-200 dark:border-gray-800">
               <button
-                onClick={() => setActiveCommentPost(activeCommentPost === post.id ? null : post.id)}
+                onClick={() => {
+                  if (handleAuthRequired('comment', post.id)) {
+                    setActiveCommentPost(activeCommentPost === post.id ? null : post.id);
+                  }
+                }}
                 className="flex items-center space-x-2 text-gray-500 hover:text-blue-500 dark:hover:text-blue-400"
               >
                 <MessageCircle className="h-5 w-5" />
@@ -399,6 +421,37 @@ export function Feed() {
           </div>
         ))}
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => {
+          setIsAuthOpen(false);
+          setIntendedAction(null);
+        }}
+        onSuccess={() => {
+          setIsAuthOpen(false);
+          // After successful sign in, perform the intended action
+          if (intendedAction) {
+            switch (intendedAction.type) {
+              case 'comment':
+                if (intendedAction.postId) {
+                  setActiveCommentPost(intendedAction.postId);
+                }
+                break;
+              case 'like':
+                if (intendedAction.postId) {
+                  handleLike(intendedAction.postId);
+                }
+                break;
+              case 'share':
+                // Share action will be handled by the user clicking the share button again
+                break;
+            }
+          }
+          setIntendedAction(null);
+        }}
+      />
     </div>
   );
 }

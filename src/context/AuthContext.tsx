@@ -14,6 +14,7 @@ import { db } from '../firebase.ts';
 
 interface AuthContextType {
   currentUser: any;
+  authLoading: boolean;
   signInWithGoogle: () => Promise<any>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
@@ -24,10 +25,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user: any) => {
       setCurrentUser(user);
+      setAuthLoading(false);
     });
     return unsubscribe;
   }, []);
@@ -87,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     currentUser,
+    authLoading,
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
