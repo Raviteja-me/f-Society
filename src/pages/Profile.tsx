@@ -138,7 +138,7 @@ export function Profile() {
         <h1 className="text-xl font-bold p-4 text-gray-900 dark:text-white">Profile</h1>
       </div>
       <div className="max-w-2xl mx-auto w-full">
-        <div className="bg-gray-900/30 backdrop-blur-sm rounded-2xl border border-gray-800/50 shadow-xl overflow-hidden">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
           {/* Profile Header with Cover Image */}
           <div className="h-32 bg-gradient-to-r from-blue-500/20 to-purple-500/20 relative flex items-center justify-center">
             {/* FSociety Logo as Main Cover */}

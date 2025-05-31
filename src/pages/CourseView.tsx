@@ -76,14 +76,28 @@ export function CourseView() {
           : material.url;
         
         return (
-          <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden shadow-2xl group">
-            <iframe
-              src={videoUrl}
-              className="w-full h-full"
-              allowFullScreen
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden shadow-2xl">
+            {material.url.includes('drive.google.com') ? (
+              <iframe
+                src={videoUrl}
+                className="w-full h-full"
+                allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                style={{ border: 'none' }}
+              />
+            ) : (
+              <video
+                src={videoUrl}
+                controls
+                className="w-full h-full"
+                controlsList="nodownload"
+                playsInline
+                preload="metadata"
+              >
+                <source src={videoUrl} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            )}
           </div>
         );
       case 'image':
