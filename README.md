@@ -1,4 +1,4 @@
-# Y-Society
+# F-Society
 
 A social media platform built with React, TypeScript, and Firebase.
 
@@ -8,4 +8,4 @@ A social media platform built with React, TypeScript, and Firebase.
 3. Add the following environment variables to `.env.local`:
 
 ## Live Demo
-[Y-Society](https://y-soceity.netlify.app)
+[F-Society](https://y-soceity.netlify.app)
