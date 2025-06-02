@@ -55,78 +55,23 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black flex">
-      {/* Mobile Header and Drawer */}
-      <div className="md:hidden fixed top-0 left-0 w-full z-50">
-        <Sidebar />
-      </div>
-
-      {/* Main Content - Always visible (mobile & desktop) */}
-      <div className="w-full md:hidden">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route
-            path="/courses"
-            element={
-              <ProtectedRoute>
-                <Courses />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/course/:courseId"
-            element={
-              <ProtectedRoute>
-                <CourseView />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/api"
-            element={
-              <ProtectedRoute>
-                <API />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <AdminRoute>
-                  <Dashboard />
-                </AdminRoute>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/apps"
-            element={
-              <ProtectedRoute>
-                <Apps />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+      {/* Mobile Header and Drawer - Hidden on md and up, handled by Sidebar component internally */}
+      {/* The Sidebar component already handles the mobile view toggling and fixed header */}
+      <div className="md:hidden">
+         <Sidebar /> {/* This will render the fixed mobile header and drawer */}
       </div>
 
       {/* Desktop Layout - Only visible on md and up */}
-      <div className="hidden md:flex justify-center w-full flex-1">
-        <div className="flex max-w-7xl mx-auto flex-1">
-          {/* Sidebar (not fixed) */}
-          <div className="hidden md:block md:w-[275px] bg-white dark:bg-black">
+      <div className="hidden md:flex flex-1 h-screen justify-center">
+        <div className="flex max-w-7xl w-full h-full overflow-hidden">
+          {/* Sidebar - Fixed */}
+          {/* The Sidebar component handles its own fixed positioning on desktop */}
+          <div className="md:w-[275px] bg-white dark:bg-black flex-shrink-0">
             <Sidebar />
           </div>
 
-          {/* Main Content - Centered Feed */}
-          <div className="flex-1 max-w-[800px] w-full border-x border-gray-200 dark:border-gray-800 flex flex-col min-h-screen">
+          {/* Main Content - Scrollable */}
+          <div className="flex-1 max-w-[800px] w-full border-x border-gray-200 dark:border-gray-800 flex flex-col overflow-y-auto">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route
@@ -182,8 +127,9 @@ function App() {
             </Routes>
           </div>
 
-          {/* Right Widgets */}
-          <div className="hidden lg:block w-[350px] pl-8 pr-4">
+          {/* Right Widgets - Fixed */}
+          {/* The Widgets component handles its own fixed positioning on desktop */}
+          <div className="hidden lg:block w-[350px] flex-shrink-0">
             <Widgets />
           </div>
         </div>

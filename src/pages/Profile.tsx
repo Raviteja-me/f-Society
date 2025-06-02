@@ -182,40 +182,40 @@ export function Profile() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-400">Name</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
                     <input
                       type="text"
                       value={profile.name}
                       onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="Your name"
-                      className="w-full p-2 border border-gray-700/50 rounded-lg bg-gray-800/30 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                      className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-400">Email</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
                     <input
                       type="email"
                       value={profile.email}
                       disabled
-                      className="w-full p-2 border border-gray-700/50 rounded-lg bg-gray-800/30 text-gray-400 cursor-not-allowed"
+                      className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-400">Bio</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
                   <textarea
                     value={profile.bio}
                     onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
                     placeholder="Tell us about yourself..."
-                    className="w-full p-2 border border-gray-700/50 rounded-lg bg-gray-800/30 text-white placeholder-gray-500 h-20 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 h-20 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-400">Location</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                       <input
@@ -223,13 +223,13 @@ export function Profile() {
                         value={profile.location}
                         onChange={(e) => setProfile(prev => ({ ...prev, location: e.target.value }))}
                         placeholder="Add location"
-                        className="w-full pl-9 p-2 border border-gray-700/50 rounded-lg bg-gray-800/30 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                        className="w-full pl-9 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-400">Company</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company</label>
                     <div className="relative">
                       <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                       <input
@@ -237,7 +237,7 @@ export function Profile() {
                         value={profile.company}
                         onChange={(e) => setProfile(prev => ({ ...prev, company: e.target.value }))}
                         placeholder="Add company"
-                        className="w-full pl-9 p-2 border border-gray-700/50 rounded-lg bg-gray-800/30 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                        className="w-full pl-9 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                   </div>
@@ -245,7 +245,7 @@ export function Profile() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-400">Website</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Website</label>
                     <div className="relative">
                       <Link className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                       <input
@@ -253,13 +253,13 @@ export function Profile() {
                         value={profile.website}
                         onChange={(e) => setProfile(prev => ({ ...prev, website: e.target.value }))}
                         placeholder="Add website"
-                        className="w-full pl-9 p-2 border border-gray-700/50 rounded-lg bg-gray-800/30 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                        className="w-full pl-9 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-400">Twitter</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Twitter</label>
                     <div className="relative">
                       <span className="absolute left-3 top-2.5 text-gray-400">@</span>
                       <input
@@ -267,26 +267,26 @@ export function Profile() {
                         value={profile.twitterHandle}
                         onChange={(e) => setProfile(prev => ({ ...prev, twitterHandle: e.target.value }))}
                         placeholder="username"
-                        className="w-full pl-8 p-2 border border-gray-700/50 rounded-lg bg-gray-800/30 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                        className="w-full pl-8 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-400">Interests</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Interests</label>
                   <div className="flex space-x-2">
                     <input
                       type="text"
                       value={newInterest}
                       onChange={(e) => setNewInterest(e.target.value)}
                       placeholder="Add an interest"
-                      className="flex-1 p-2 border border-gray-700/50 rounded-lg bg-gray-800/30 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                      className="flex-1 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                     <button
                       onClick={handleAddInterest}
                       disabled={!newInterest.trim()}
-                      className="px-4 py-2 bg-blue-500/80 text-white rounded-lg hover:bg-blue-600/80 disabled:opacity-50 transition-colors"
+                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
                     >
                       Add
                     </button>
@@ -295,12 +295,12 @@ export function Profile() {
                     {profile.interests.map((interest, index) => (
                       <div
                         key={index}
-                        className="flex items-center space-x-1 bg-gray-800/50 px-3 py-1 rounded-full border border-gray-700/50"
+                        className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700"
                       >
-                        <span className="text-sm text-gray-300">{interest}</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{interest}</span>
                         <button
                           onClick={() => handleRemoveInterest(interest)}
-                          className="text-gray-400 hover:text-red-400 transition-colors"
+                          className="text-gray-400 hover:text-red-500 transition-colors"
                         >
                           ×
                         </button>
@@ -312,14 +312,14 @@ export function Profile() {
                 <div className="flex space-x-4 pt-2">
                   <button
                     onClick={handleSave}
-                    className="flex-1 bg-blue-500/80 text-white py-2 rounded-lg hover:bg-blue-600/80 transition-colors flex items-center justify-center space-x-2"
+                    className="px-6 py-2 bg-blue-500 text-white text-sm rounded-full hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2"
                   >
                     <Save className="h-4 w-4" />
                     <span>Save Changes</span>
                   </button>
                   <button
                     onClick={() => setIsEditing(false)}
-                    className="px-4 py-2 border border-gray-700/50 text-gray-300 rounded-lg hover:bg-gray-800/50 transition-colors"
+                    className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     Cancel
                   </button>

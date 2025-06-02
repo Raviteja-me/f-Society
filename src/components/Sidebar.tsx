@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, BookOpen, User, LogOut, Menu, X, LayoutDashboard, Grid } from 'lucide-react';
+import { Home, BookOpen, User, LogOut, Menu, X, LayoutDashboard, Grid, PlusCircle } from 'lucide-react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { Link } from './Link';
 import { ThemeToggle } from './ThemeToggle';
@@ -21,6 +21,19 @@ export function Sidebar() {
     { icon: Grid, text: 'Apps', path: '/apps' },
     { icon: User, text: 'Profile', path: '/profile' }
   ];
+
+  // Add Post menu item if user is logged in
+  if (currentUser) {
+    // Place the Post item after Home, but before others if needed, or at the end.
+    // Let's place it after Profile for now, similar to typical social media sidebars.
+    const postMenuItem = { icon: PlusCircle, text: 'Post', path: '/' };
+    const profileIndex = menuItems.findIndex(item => item.text === 'Profile');
+    if (profileIndex !== -1) {
+      menuItems.splice(profileIndex + 1, 0, postMenuItem);
+    } else {
+      menuItems.push(postMenuItem);
+    }
+  }
 
   // Add Dashboard menu item if user is admin
   if (currentUser?.isAdmin) {
@@ -51,6 +64,13 @@ export function Sidebar() {
     if (currentUser?.isAdmin) {
       navigate('/dashboard');
     }
+  };
+
+  const handlePostClick = () => {
+    navigate('/');
+    closeMobileMenu();
+    // Scroll to the top of the page
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -119,7 +139,7 @@ export function Sidebar() {
                 Icon={item.icon}
                 text={item.text}
                 path={item.path}
-                onClick={closeMobileMenu}
+                onClick={item.path === '/' ? handlePostClick : closeMobileMenu} // Use handlePostClick for '/' path
               />
             ))}
           </div>
@@ -170,6 +190,7 @@ export function Sidebar() {
                 Icon={item.icon}
                 text={item.text}
                 path={item.path}
+                onClick={item.path === '/' ? handlePostClick : undefined} // Use handlePostClick for '/' path
               />
             ))}
           </div>
