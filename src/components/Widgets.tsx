@@ -31,18 +31,39 @@ export function Widgets() {
 
   const suggestions = [
     { 
-      name: 'Shenoy', 
-      handle: '@instagram', 
-      avatar: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&h=256&q=80',
-      isPremium: true,
-      redirectUrl: 'https://www.instagram.com/shenoy_army_'
-    },
-    { 
       name: 'Ravi teja Beere', 
       handle: '@linkedin', 
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&h=256&q=80',
-      isPremium: true,
+      avatar: '/admin.png', // Use provided admin profile image
+      isAdmin: true,
       redirectUrl: 'https://www.linkedin.com/in/raviteja-beere-89a420167/'
+    },
+    {
+      name: 'Instagram',
+      handle: '@lazyjobseeker.com_official',
+      avatar: '/insta.png', // Use Instagram logo
+      isAdmin: false,
+      redirectUrl: 'https://www.instagram.com/lazyjobseeker.com_official/'
+    },
+    {
+      name: 'YouTube',
+      handle: '@LazyJobSeeker',
+      avatar: '/youtube.png', // Use YouTube logo
+      isAdmin: false,
+      redirectUrl: 'https://www.youtube.com/@LazyJobSeeker'
+    },
+    {
+      name: 'LinkedIn',
+      handle: '@LazyJobSeeker',
+      avatar: '/linkedin.png', // Use LinkedIn logo
+      isAdmin: false,
+      redirectUrl: 'https://www.linkedin.com/company/106751084/admin/dashboard/'
+    },
+    {
+      name: 'YouTube',
+      handle: '@SunShine-Raviteja',
+      avatar: '/youtube.png', // Use YouTube logo
+      isAdmin: false,
+      redirectUrl: 'https://www.youtube.com/@SunShine-Raviteja'
     },
   ];
 
@@ -76,19 +97,19 @@ export function Widgets() {
           )}
         </div>
         <div className="space-y-4">
-          {suggestions.map((suggestion) => (
+          {suggestions.map((suggestion, idx) => (
             <div 
-              key={suggestion.handle} 
+              key={suggestion.handle + idx} 
               className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
               onClick={() => handleRedirect(suggestion.redirectUrl)}
             >
               <div className="flex items-center space-x-3">
-                <img src={suggestion.avatar} alt={suggestion.name} className="h-12 w-12 rounded-full" />
+                <img src={suggestion.avatar} alt={suggestion.name} className="h-12 w-12 rounded-full object-cover" />
                 <div>
                   <div className="flex items-center space-x-1">
                     <p className="font-bold dark:text-white">{suggestion.name}</p>
-                    {suggestion.isPremium && (
-                      <span className="text-xs bg-gray-900 text-white px-2 py-0.5 rounded-full">PRO</span>
+                    {suggestion.isAdmin && (
+                      <span className="text-xs bg-blue-900 text-white px-2 py-0.5 rounded-full ml-1">ADMIN</span>
                     )}
                   </div>
                   <p className="text-gray-500 dark:text-gray-400">{suggestion.handle}</p>

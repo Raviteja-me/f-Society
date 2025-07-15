@@ -442,6 +442,174 @@ export function Apps() {
               </div>
             </div>
           </div>
+
+          {/* NutriSnap App Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+            <div className="flex flex-col md:flex-row">
+              <div className="p-6 flex-1 flex flex-col">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">NutriSnap</h2>
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6">
+                  Get your personal diet plan, track meals with just an image, check if you reached your daily goals, and get a fully tailored weekly plan. All free, powered by AI. Like HealthifyMe, but open source and free forever.
+                </p>
+                <ul className="mb-6 text-sm text-gray-700 dark:text-gray-300 list-disc list-inside">
+                  <li>Personalized diet plans</li>
+                  <li>Track meals with a photo</li>
+                  <li>Daily & weekly goal tracking</li>
+                  <li>Fully tailored to your profile</li>
+                  <li>Free and open source</li>
+                  <li>Powerful AI, just like HealthifyMe</li>
+                </ul>
+                <div className="mt-auto pt-5 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => handleLaunchApp('nutrisnap')}
+                    className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-green-500 to-blue-500 text-white px-5 py-2.5 rounded-md hover:from-green-600 hover:to-blue-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm font-semibold"
+                  >
+                    <span>Try NutriSnap</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Cluely Cone App Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+            <div className="flex flex-col md:flex-row">
+              <div className="p-6 flex-1 flex flex-col">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Cluely Cone</h2>
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6">
+                  A stealth interview hacker: always on top, fully transparent, and helps you during interviews. Just like Cluely, but 100% free and open source.
+                </p>
+                <ul className="mb-6 text-sm text-gray-700 dark:text-gray-300 list-disc list-inside">
+                  <li>Stealth mode: hides during interviews</li>
+                  <li>Always on top & transparent</li>
+                  <li>Real-time interview help</li>
+                  <li>Free forever</li>
+                  <li>Open source</li>
+                  <li>Download for Windows, Mac, and more</li>
+                </ul>
+                <div className="mt-auto pt-5 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => handleLaunchApp('cluely-cone')}
+                    className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-5 py-2.5 rounded-md hover:from-blue-600 hover:to-purple-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm font-semibold"
+                  >
+                    <span>Try Cluely Cone</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pushpaka Rides App Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+            <div className="flex flex-col md:flex-row">
+              <div className="p-6 flex-1 flex flex-col">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Pushpaka Rides</h2>
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6">
+                  A perfect clone of Uber, Rapido, Ola-type apps. All algorithms included, minimal API usage, runs at very low cost. Try it on pushpakarides.com. Available for Windows, iOS, Android, and Web. Open source!
+                </p>
+                <ul className="mb-6 text-sm text-gray-700 dark:text-gray-300 list-disc list-inside">
+                  <li>Clone of Uber, Rapido, Ola</li>
+                  <li>All algorithms included</li>
+                  <li>Minimal API usage</li>
+                  <li>Runs at very low cost</li>
+                  <li>Available for Windows, iOS, Android, Web</li>
+                  <li>Open source</li>
+                </ul>
+                <div className="mt-auto pt-5 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => handleLaunchApp('pushpaka-rides')}
+                    className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-5 py-2.5 rounded-md hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm font-semibold"
+                  >
+                    <span>Try Pushpaka Rides</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Anything to PDF App Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+            <div className="flex flex-col md:flex-row">
+              <div className="p-6 flex-1 flex flex-col">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Anything to PDF</h2>
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6">
+                  Convert any file format to PDF. Documents, images, webpages - transform them all with a single click.
+                </p>
+                <ul className="mb-6 text-sm text-gray-700 dark:text-gray-300 list-disc list-inside">
+                  <li>Multiple format support</li>
+                  <li>Maintains formatting</li>
+                  <li>Batch conversion</li>
+                  <li>High-quality output</li>
+                </ul>
+                <div className="mt-auto pt-5 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => handleLaunchApp('anything-to-pdf')}
+                    className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-5 py-2.5 rounded-md hover:from-red-600 hover:to-pink-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm font-semibold"
+                  >
+                    <span>Try Anything to PDF</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Imagenius AI Image Editor App Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+            <div className="flex flex-col md:flex-row">
+              <div className="p-6 flex-1 flex flex-col">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Imagenius AI Image Editor</h2>
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6">
+                  Just edit images with chatting. AI-powered image editing made simple and interactive.
+                </p>
+                <ul className="mb-6 text-sm text-gray-700 dark:text-gray-300 list-disc list-inside">
+                  <li>Edit images via chat</li>
+                  <li>AI-powered enhancements</li>
+                  <li>Easy to use</li>
+                  <li>No design skills needed</li>
+                </ul>
+                <div className="mt-auto pt-5 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => handleLaunchApp('imagenius-ai-image-editor')}
+                    className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-5 py-2.5 rounded-md hover:from-blue-600 hover:to-green-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm font-semibold"
+                  >
+                    <span>Try Imagenius AI Image Editor</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Landing AI App Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+            <div className="flex flex-col md:flex-row">
+              <div className="p-6 flex-1 flex flex-col">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Landing AI</h2>
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6">
+                  Just create a landing page with a prompt and download code to add to your existing project. Edit and modify the page as you like.
+                </p>
+                <ul className="mb-6 text-sm text-gray-700 dark:text-gray-300 list-disc list-inside">
+                  <li>Prompt-based landing page creation</li>
+                  <li>Downloadable code</li>
+                  <li>Easy integration</li>
+                  <li>Fully editable</li>
+                </ul>
+                <div className="mt-auto pt-5 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => handleLaunchApp('landing-ai')}
+                    className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white px-5 py-2.5 rounded-md hover:from-purple-600 hover:to-blue-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm font-semibold"
+                  >
+                    <span>Try Landing AI</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Error display (removed) */}

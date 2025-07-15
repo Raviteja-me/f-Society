@@ -16,6 +16,7 @@ import { MessageCircle, Heart, Share, ThumbsUp, ChevronDown, ChevronUp } from 'l
 import { useAuth } from '../context/AuthContext';
 import { FileText } from 'lucide-react';
 import { AuthModal } from './Auth';
+import { LinkPreview } from './LinkPreview';
 
 interface Media {
   type: 'image' | 'video' | 'file';
@@ -261,6 +262,7 @@ export function Feed() {
             {/* Post Content */}
             <div className="text-gray-900 dark:text-white whitespace-pre-wrap break-words">
               {getTruncatedContent(post.content, post.id)}
+              <LinkPreview content={getTruncatedContent(post.content, post.id)} />
               {shouldShowSeeMore(post.content) && (
                 <button
                   onClick={() => togglePostExpansion(post.id)}
