@@ -40,17 +40,6 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     setMedia(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Helper: Extract YouTube video IDs from content
-  function extractYouTubeIds(text: string): string[] {
-    const regex = /(?:https?:\/\/(?:www\.|m\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/))([\w-]{11})/g;
-    const ids: string[] = [];
-    let match;
-    while ((match = regex.exec(text)) !== null) {
-      ids.push(match[1]);
-    }
-    return ids;
-  }
-
   // Helper: Extract all links from content
   function extractLinks(text: string): string[] {
     const urlRegex = /https?:\/\/[\w\-._~:/?#[\]@!$&'()*+,;=%]+/g;
