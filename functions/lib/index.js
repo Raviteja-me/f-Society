@@ -30,32 +30,16 @@ const student_1 = require("./student");
 const razorpay_1 = require("./razorpay");
 // Initialize Firebase Admin
 // initializeApp();
-exports.registerStudentFunction = functions.https.onRequest({
-    memory: '256MiB',
-    region: 'asia-south1',
-    secrets: ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET']
-}, (req, res) => {
+exports.registerStudentFunction = functions.https.onRequest((req, res) => {
     (0, student_1.registerStudent)(req, res);
 });
-exports.updateStudentApiKeyFunction = functions.https.onRequest({
-    memory: '256MiB',
-    region: 'asia-south1',
-    secrets: ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET']
-}, (req, res) => {
+exports.updateStudentApiKeyFunction = functions.https.onRequest((req, res) => {
     (0, student_1.updateStudentApiKey)(req, res);
 });
-exports.createRazorpayOrderFunction = functions.https.onRequest({
-    memory: '256MiB',
-    region: 'asia-south1',
-    secrets: ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET']
-}, (req, res) => {
+exports.createRazorpayOrderFunction = functions.https.onRequest((req, res) => {
     (0, razorpay_1.createRazorpayOrder)(req, res);
 });
-exports.verifyRazorpayPaymentFunction = functions.https.onRequest({
-    memory: '256MiB',
-    region: 'asia-south1',
-    secrets: ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET']
-}, (req, res) => {
+exports.verifyRazorpayPaymentFunction = functions.https.onRequest((req, res) => {
     (0, razorpay_1.verifyRazorpayPayment)(req, res);
 });
 //# sourceMappingURL=index.js.map
